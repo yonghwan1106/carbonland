@@ -1,23 +1,33 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useStore } from '@/stores/useStore';
-import { MAP_CONFIG } from '@/lib/constants';
+import { MAP_CONFIG, CARBON_COEFFICIENTS } from '@/lib/constants';
 import { m2ToHa } from '@/lib/carbonCalc';
 
 // OpenLayers 타입
 import type OlMap from 'ol/Map';
 import type { Draw as OlDraw } from 'ol/interaction';
 import type { Vector as OlVectorSource } from 'ol/source';
+import type { Feature as OlFeature } from 'ol';
 
 export default function MapContainer() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<OlMap | null>(null);
   const drawRef = useRef<OlDraw | null>(null);
   const vectorSourceRef = useRef<OlVectorSource | null>(null);
+  const presetLayerRef = useRef<OlVectorSource | null>(null);
 
   const [isMapReady, setIsMapReady] = useState(false);
-  const { isDrawing, setSelectedArea, setIsDrawing, layers } = useStore();
+  const {
+    isDrawing,
+    setSelectedArea,
+    setIsDrawing,
+    layers,
+    viewport,
+    selectedArea,
+    presetAreas
+  } = useStore();
 
   // OpenLayers 모듈 동적 로드 및 지도 초기화
   useEffect(() => {
@@ -33,7 +43,32 @@ export default function MapContainer() {
 
       if (!mapRef.current) return;
 
-      // 벡터 소스 (선택 영역용)
+      // 프리셋 영역 소스
+      const presetSource = new VectorSource();
+      presetLayerRef.current = presetSource;
+
+      // 프리셋 영역 레이어 (데모 지역 표시)
+      const presetLayer = new VectorLayer({
+        source: presetSource,
+        style: (feature) => {
+          const isSelected = feature.get('isSelected');
+          const landUseType = feature.get('landUseType');
+          const color = CARBON_COEFFICIENTS[landUseType as keyof typeof CARBON_COEFFICIENTS]?.color || '#3b82f6';
+
+          return new Style({
+            fill: new Fill({
+              color: isSelected ? `${color}40` : `${color}20`,
+            }),
+            stroke: new Stroke({
+              color: isSelected ? color : `${color}99`,
+              width: isSelected ? 3 : 2,
+              lineDash: isSelected ? undefined : [5, 5],
+            }),
+          });
+        },
+      });
+
+      // 벡터 소스 (직접 선택 영역용)
       const vectorSource = new VectorSource();
       vectorSourceRef.current = vectorSource;
 
@@ -42,10 +77,10 @@ export default function MapContainer() {
         source: vectorSource,
         style: new Style({
           fill: new Fill({
-            color: 'rgba(34, 197, 94, 0.2)',
+            color: 'rgba(34, 197, 94, 0.3)',
           }),
           stroke: new Stroke({
-            color: '#22c55e',
+            color: '#16a34a',
             width: 3,
           }),
         }),
@@ -58,6 +93,7 @@ export default function MapContainer() {
           new TileLayer({
             source: new OSM(),
           }),
+          presetLayer,
           vectorLayer,
         ],
         view: new View({
@@ -161,15 +197,101 @@ export default function MapContainer() {
     // TODO: API 키 설정 후 WMS 레이어 추가
   }, [layers]);
 
+  // 프리셋 영역 표시
+  useEffect(() => {
+    if (!isMapReady || !presetLayerRef.current) return;
+
+    const loadPresets = async () => {
+      const { Feature } = await import('ol');
+      const { Polygon } = await import('ol/geom');
+      const { fromLonLat } = await import('ol/proj');
+
+      const source = presetLayerRef.current!;
+      source.clear();
+
+      presetAreas.forEach((preset) => {
+        // 좌표 변환 (lon/lat -> map projection)
+        const coords = preset.polygon[0].map((coord) => fromLonLat(coord));
+
+        const feature = new Feature({
+          geometry: new Polygon([coords]),
+          id: preset.id,
+          name: preset.name,
+          landUseType: preset.currentLandUse,
+          isSelected: selectedArea?.id === preset.id,
+        });
+
+        feature.setId(preset.id);
+        source.addFeature(feature);
+      });
+    };
+
+    loadPresets();
+  }, [isMapReady, presetAreas, selectedArea?.id]);
+
+  // 뷰포트 변경 시 지도 이동
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isMapReady) return;
+
+    const updateView = async () => {
+      const { fromLonLat } = await import('ol/proj');
+      const view = mapInstanceRef.current!.getView();
+      view.animate({
+        center: fromLonLat(viewport.center),
+        zoom: viewport.zoom,
+        duration: 500,
+      });
+    };
+
+    updateView();
+  }, [viewport, isMapReady]);
+
+  // 선택 영역 변경 시 프리셋 레이어 업데이트
+  useEffect(() => {
+    if (!presetLayerRef.current) return;
+
+    const source = presetLayerRef.current;
+    source.getFeatures().forEach((feature) => {
+      feature.set('isSelected', feature.getId() === selectedArea?.id);
+    });
+  }, [selectedArea?.id]);
+
   if (!isMapReady) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-slate-100">
-        <div className="text-slate-500">지도 로딩 중...</div>
+        <div className="animate-pulse text-slate-500 flex flex-col items-center gap-2">
+          <div className="w-8 h-8 border-2 border-slate-300 border-t-green-500 rounded-full animate-spin" />
+          <span>지도 로딩 중...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div ref={mapRef} className="w-full h-full" />
+    <div className="relative w-full h-full">
+      <div ref={mapRef} className="w-full h-full" />
+
+      {/* 지도 범례 */}
+      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3 text-xs">
+        <div className="font-medium text-slate-700 mb-2">범례</div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-3 border-2 border-dashed border-green-600 bg-green-600/20 rounded-sm" />
+            <span className="text-slate-600">데모 영역</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-3 border-2 border-green-600 bg-green-600/30 rounded-sm" />
+            <span className="text-slate-600">선택된 영역</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 드로잉 모드 안내 */}
+      {isDrawing && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium">
+          지도에서 다각형을 그려주세요 (클릭으로 꼭지점, 더블클릭으로 완료)
+        </div>
+      )}
+    </div>
   );
 }
