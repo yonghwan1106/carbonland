@@ -31,22 +31,30 @@ export default function MapContainer() {
 
   // OpenLayers 모듈 동적 로드 및 지도 초기화
   useEffect(() => {
-    if (mapInstanceRef.current) return;
+    // StrictMode 대응: 이미 지도가 있으면 정리
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setTarget(undefined);
+      mapInstanceRef.current = null;
+    }
+
+    let isMounted = true;
 
     const initMap = async () => {
       try {
-        console.log('initMap started');
         const { default: OlMap } = await import('ol/Map');
         const { default: View } = await import('ol/View');
         const { Tile: TileLayer, Vector: VectorLayer } = await import('ol/layer');
         const { OSM, Vector: VectorSource } = await import('ol/source');
         const { Style, Fill, Stroke } = await import('ol/style');
         const { fromLonLat } = await import('ol/proj');
-        console.log('All imports done');
 
-        if (!mapRef.current) {
-          console.log('mapRef.current is null');
+        if (!mapRef.current || !isMounted) {
           return;
+        }
+
+        // 기존 자식 요소 정리 (StrictMode 대응)
+        while (mapRef.current.firstChild) {
+          mapRef.current.removeChild(mapRef.current.firstChild);
         }
 
         // 프리셋 영역 소스
@@ -115,7 +123,6 @@ export default function MapContainer() {
         });
 
         mapInstanceRef.current = map;
-        console.log('Map created successfully');
         setIsMapReady(true);
       } catch (error) {
         console.error('Error initializing map:', error);
@@ -125,16 +132,23 @@ export default function MapContainer() {
     initMap();
 
     return () => {
+      isMounted = false;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.setTarget(undefined);
         mapInstanceRef.current = null;
+        vectorSourceRef.current = null;
+        presetLayerRef.current = null;
+        drawRef.current = null;
+        setIsMapReady(false);
       }
     };
   }, []);
 
   // 드로잉 인터랙션 관리
   useEffect(() => {
-    if (!mapInstanceRef.current || !vectorSourceRef.current || !isMapReady) return;
+    if (!mapInstanceRef.current || !vectorSourceRef.current || !isMapReady) {
+      return;
+    }
 
     const setupDrawing = async () => {
       const { Draw } = await import('ol/interaction');
