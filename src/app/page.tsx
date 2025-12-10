@@ -1,10 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import ControlPanel from '@/components/panel/ControlPanel';
 import ResultPanel from '@/components/result/ResultPanel';
 import LayerPanel from '@/components/map/LayerPanel';
-import { Leaf, Github } from 'lucide-react';
+import { Leaf, Github, Info } from 'lucide-react';
 
 // OpenLayers SSR 방지를 위한 동적 import
 const MapContainer = dynamic(
@@ -40,6 +41,13 @@ export default function Home() {
           <span className="text-sm text-green-100 hidden sm:block">
             경기 기후 바이브코딩 해커톤 2025
           </span>
+          <Link
+            href="/about"
+            className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors text-sm"
+          >
+            <Info className="w-4 h-4" />
+            <span className="hidden sm:inline">프로젝트 소개</span>
+          </Link>
           <a
             href="https://github.com/yonghwan1106/carbonland"
             target="_blank"
