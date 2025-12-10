@@ -15,7 +15,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, TreePine, Trash2, Play, RotateCcw } from 'lucide-react';
+import { MapPin, TreePine, Trash2, Play, RotateCcw, Navigation } from 'lucide-react';
 
 export default function ControlPanel() {
   const {
@@ -32,6 +32,8 @@ export default function ControlPanel() {
     currentStatus,
     runSimulation,
     resetSimulation,
+    presetAreas,
+    selectPresetArea,
   } = useStore();
 
   const landUseOptions = Object.entries(CARBON_COEFFICIENTS).map(([key, value]) => ({
@@ -48,12 +50,45 @@ export default function ControlPanel() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* 데모 영역 선택 (프리셋) */}
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-green-700">
+              <Navigation className="w-4 h-4" />
+              데모 영역 선택
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-xs text-green-600 mb-2">
+              클릭하면 해당 지역으로 이동합니다
+            </p>
+            <div className="grid grid-cols-1 gap-2">
+              {presetAreas.map((preset) => (
+                <Button
+                  key={preset.id}
+                  variant={selectedArea?.id === preset.id ? 'default' : 'outline'}
+                  size="sm"
+                  className="justify-start h-auto py-2 px-3"
+                  onClick={() => selectPresetArea(preset.id)}
+                >
+                  <div className="text-left">
+                    <div className="font-medium text-sm">{preset.name}</div>
+                    <div className="text-xs opacity-70">
+                      {preset.areaHa} ha · {CARBON_COEFFICIENTS[preset.currentLandUse].name}
+                    </div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* 영역 선택 */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              영역 선택
+              직접 영역 선택
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -62,6 +97,7 @@ export default function ControlPanel() {
                 onClick={() => setIsDrawing(true)}
                 disabled={isDrawing}
                 size="sm"
+                variant="outline"
                 className="flex-1"
               >
                 {isDrawing ? '선택 중...' : '영역 그리기'}
@@ -85,7 +121,10 @@ export default function ControlPanel() {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">({formatNumber(selectedArea.areaM2, 0)} m²)</span>
+                  <span className="text-slate-600"></span>
+                  <span className="text-slate-500 text-xs">
+                    ({formatNumber(selectedArea.areaM2, 0)} m²)
+                  </span>
                 </div>
               </div>
             )}
