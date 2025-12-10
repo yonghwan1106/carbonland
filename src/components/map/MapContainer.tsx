@@ -34,27 +34,27 @@ export default function MapContainer() {
     if (mapInstanceRef.current) return;
 
     const initMap = async () => {
-      const { default: OlMap } = await import('ol/Map');
-      const { default: View } = await import('ol/View');
-      const { Tile: TileLayer, Vector: VectorLayer } = await import('ol/layer');
-      const { OSM, Vector: VectorSource } = await import('ol/source');
-      const { Style, Fill, Stroke } = await import('ol/style');
-      const { fromLonLat } = await import('ol/proj');
+      try {
+        console.log('initMap started');
+        const { default: OlMap } = await import('ol/Map');
+        const { default: View } = await import('ol/View');
+        const { Tile: TileLayer, Vector: VectorLayer } = await import('ol/layer');
+        const { OSM, Vector: VectorSource } = await import('ol/source');
+        const { Style, Fill, Stroke } = await import('ol/style');
+        const { fromLonLat } = await import('ol/proj');
+        console.log('All imports done');
 
-      if (!mapRef.current) return;
+        if (!mapRef.current) {
+          console.log('mapRef.current is null');
+          return;
+        }
 
-      // 프리셋 영역 소스
-      const presetSource = new VectorSource();
-      presetLayerRef.current = presetSource;
+        // 프리셋 영역 소스
+        const presetSource = new VectorSource();
+        presetLayerRef.current = presetSource;
 
-      // 프리셋 영역 레이어 (데모 지역 표시)
-      const presetLayer = new VectorLayer({
-        source: presetSource,
-        style: (feature) => {
-          const isSelected = feature.get('isSelected');
-          const landUseType = feature.get('landUseType');
-          const color = CARBON_COEFFICIENTS[landUseType as keyof typeof CARBON_COEFFICIENTS]?.color || '#3b82f6';
-
+        // 프리셋 영역 스타일 함수 생성
+        const createPresetStyle = (isSelected: boolean, color: string) => {
           return new Style({
             fill: new Fill({
               color: isSelected ? `${color}40` : `${color}20`,
@@ -65,47 +65,61 @@ export default function MapContainer() {
               lineDash: isSelected ? undefined : [5, 5],
             }),
           });
-        },
-      });
+        };
 
-      // 벡터 소스 (직접 선택 영역용)
-      const vectorSource = new VectorSource();
-      vectorSourceRef.current = vectorSource;
+        // 프리셋 영역 레이어 (데모 지역 표시)
+        const presetLayer = new VectorLayer({
+          source: presetSource,
+          style: (feature) => {
+            const isSelected = feature.get('isSelected');
+            const landUseType = feature.get('landUseType');
+            const color = CARBON_COEFFICIENTS[landUseType as keyof typeof CARBON_COEFFICIENTS]?.color || '#3b82f6';
+            return createPresetStyle(isSelected, color);
+          },
+        });
 
-      // 벡터 레이어 (선택 영역 표시)
-      const vectorLayer = new VectorLayer({
-        source: vectorSource,
-        style: new Style({
-          fill: new Fill({
-            color: 'rgba(34, 197, 94, 0.3)',
+        // 벡터 소스 (직접 선택 영역용)
+        const vectorSource = new VectorSource();
+        vectorSourceRef.current = vectorSource;
+
+        // 벡터 레이어 (선택 영역 표시)
+        const vectorLayer = new VectorLayer({
+          source: vectorSource,
+          style: new Style({
+            fill: new Fill({
+              color: 'rgba(34, 197, 94, 0.3)',
+            }),
+            stroke: new Stroke({
+              color: '#16a34a',
+              width: 3,
+            }),
           }),
-          stroke: new Stroke({
-            color: '#16a34a',
-            width: 3,
-          }),
-        }),
-      });
+        });
 
-      // 지도 생성
-      const map = new OlMap({
-        target: mapRef.current,
-        layers: [
-          new TileLayer({
-            source: new OSM(),
+        // 지도 생성
+        const map = new OlMap({
+          target: mapRef.current,
+          layers: [
+            new TileLayer({
+              source: new OSM(),
+            }),
+            presetLayer,
+            vectorLayer,
+          ],
+          view: new View({
+            center: fromLonLat(MAP_CONFIG.CENTER),
+            zoom: MAP_CONFIG.ZOOM,
+            minZoom: MAP_CONFIG.MIN_ZOOM,
+            maxZoom: MAP_CONFIG.MAX_ZOOM,
           }),
-          presetLayer,
-          vectorLayer,
-        ],
-        view: new View({
-          center: fromLonLat(MAP_CONFIG.CENTER),
-          zoom: MAP_CONFIG.ZOOM,
-          minZoom: MAP_CONFIG.MIN_ZOOM,
-          maxZoom: MAP_CONFIG.MAX_ZOOM,
-        }),
-      });
+        });
 
-      mapInstanceRef.current = map;
-      setIsMapReady(true);
+        mapInstanceRef.current = map;
+        console.log('Map created successfully');
+        setIsMapReady(true);
+      } catch (error) {
+        console.error('Error initializing map:', error);
+      }
     };
 
     initMap();
@@ -256,35 +270,37 @@ export default function MapContainer() {
     });
   }, [selectedArea?.id]);
 
-  if (!isMapReady) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-100">
-        <div className="animate-pulse text-slate-500 flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-2 border-slate-300 border-t-green-500 rounded-full animate-spin" />
-          <span>지도 로딩 중...</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative w-full h-full">
+      {/* 지도 컨테이너 - 항상 렌더링되어야 함 */}
       <div ref={mapRef} className="w-full h-full" />
 
-      {/* 지도 범례 */}
-      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3 text-xs">
-        <div className="font-medium text-slate-700 mb-2">범례</div>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-3 border-2 border-dashed border-green-600 bg-green-600/20 rounded-sm" />
-            <span className="text-slate-600">데모 영역</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-3 border-2 border-green-600 bg-green-600/30 rounded-sm" />
-            <span className="text-slate-600">선택된 영역</span>
+      {/* 로딩 오버레이 */}
+      {!isMapReady && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+          <div className="animate-pulse text-slate-500 flex flex-col items-center gap-2">
+            <div className="w-8 h-8 border-2 border-slate-300 border-t-green-500 rounded-full animate-spin" />
+            <span>지도 로딩 중...</span>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* 지도 범례 */}
+      {isMapReady && (
+        <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3 text-xs">
+          <div className="font-medium text-slate-700 mb-2">범례</div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-3 border-2 border-dashed border-green-600 bg-green-600/20 rounded-sm" />
+              <span className="text-slate-600">데모 영역</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-3 border-2 border-green-600 bg-green-600/30 rounded-sm" />
+              <span className="text-slate-600">선택된 영역</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 드로잉 모드 안내 */}
       {isDrawing && (
