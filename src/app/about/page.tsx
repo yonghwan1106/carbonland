@@ -27,68 +27,68 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* 헤더 */}
-      <header className="h-14 bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-between px-4 shadow-md sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-              <Leaf className="w-5 h-5 text-white" />
+      <header className="h-12 md:h-14 bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-between px-3 md:px-4 shadow-md sticky top-0 z-50">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Link href="/" className="flex items-center gap-2 md:gap-3 hover:opacity-90 transition-opacity">
+            <div className="w-8 h-8 md:w-9 md:h-9 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+              <Leaf className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">CarbonLand</h1>
-              <p className="text-xs text-green-100 -mt-0.5">탄소중립 토지이용 시뮬레이터</p>
+              <h1 className="text-base md:text-lg font-bold text-white">CarbonLand</h1>
+              <p className="text-[10px] md:text-xs text-green-100 -mt-0.5 hidden sm:block">탄소중립 토지이용 시뮬레이터</p>
             </div>
           </Link>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href="/" className="text-sm text-green-100 hover:text-white transition-colors">
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link href="/" className="text-xs md:text-sm text-green-100 hover:text-white transition-colors">
             시뮬레이터
           </Link>
-          <span className="text-sm text-white font-medium">프로젝트 소개</span>
+          <span className="text-xs md:text-sm text-white font-medium hidden sm:inline">프로젝트 소개</span>
           <a
             href="https://github.com/yonghwan1106/carbonland"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-white/80 hover:text-white transition-colors"
           >
-            <Github className="w-5 h-5" />
+            <Github className="w-4 h-4 md:w-5 md:h-5" />
           </a>
         </div>
       </header>
 
       {/* 메인 컨텐츠 */}
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-3 md:px-4 py-6 md:py-8">
         {/* 뒤로가기 */}
-        <Link href="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 mb-6">
+        <Link href="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 mb-4 md:mb-6">
           <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">시뮬레이터로 돌아가기</span>
+          <span className="text-xs md:text-sm">시뮬레이터로 돌아가기</span>
         </Link>
 
         {/* 히어로 섹션 */}
-        <section className="text-center mb-12">
-          <Badge className="mb-4 bg-green-100 text-green-700 hover:bg-green-100">
+        <section className="text-center mb-8 md:mb-12">
+          <Badge className="mb-3 md:mb-4 bg-green-100 text-green-700 hover:bg-green-100 text-xs">
             경기 기후 바이브코딩 해커톤 2025
           </Badge>
-          <h1 className="text-4xl font-bold text-slate-800 mb-4">
+          <h1 className="text-2xl md:text-4xl font-bold text-slate-800 mb-2 md:mb-4">
             CarbonLand
           </h1>
-          <p className="text-xl text-slate-600 mb-2">탄소중립 토지이용 시뮬레이터</p>
-          <p className="text-2xl font-semibold text-green-600 mt-6">
+          <p className="text-base md:text-xl text-slate-600 mb-2">탄소중립 토지이용 시뮬레이터</p>
+          <p className="text-lg md:text-2xl font-semibold text-green-600 mt-4 md:mt-6">
             &quot;이 땅을 개발하면, 탄소는 얼마나 변할까?&quot;
           </p>
-          <p className="text-slate-500 mt-4 max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-slate-500 mt-3 md:mt-4 max-w-2xl mx-auto px-2">
             개발/보전 계획에 따른 탄소 흡수/저장/배출 변화를 시뮬레이션하는 의사결정 지원 도구
           </p>
         </section>
 
-        <Separator className="my-8" />
+        <Separator className="my-6 md:my-8" />
 
         {/* 해결하려는 문제 */}
-        <section className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <Target className="w-6 h-6 text-green-600" />
-            <h2 className="text-2xl font-bold text-slate-800">해결하려는 문제</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Target className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">해결하려는 문제</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <Card className="border-orange-200 bg-orange-50/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base text-orange-700">탄소 영향 파악 불가</CardTitle>
@@ -120,12 +120,12 @@ export default function AboutPage() {
         </section>
 
         {/* 타겟 사용자 */}
-        <section className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <Users className="w-6 h-6 text-green-600" />
-            <h2 className="text-2xl font-bold text-slate-800">타겟 사용자</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Users className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">타겟 사용자</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -166,12 +166,12 @@ export default function AboutPage() {
         </section>
 
         {/* 주요 기능 */}
-        <section className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <Lightbulb className="w-6 h-6 text-green-600" />
-            <h2 className="text-2xl font-bold text-slate-800">주요 기능</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Lightbulb className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">주요 기능</h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
@@ -228,10 +228,10 @@ export default function AboutPage() {
         </section>
 
         {/* 탄소 계수 */}
-        <section className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <TreePine className="w-6 h-6 text-green-600" />
-            <h2 className="text-2xl font-bold text-slate-800">토지이용별 탄소 계수</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <TreePine className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">토지이용별 탄소 계수</h2>
           </div>
           <Card>
             <CardContent className="pt-6">
@@ -311,45 +311,45 @@ export default function AboutPage() {
         </section>
 
         {/* 환산 지표 */}
-        <section className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <Car className="w-6 h-6 text-green-600" />
-            <h2 className="text-2xl font-bold text-slate-800">이해하기 쉬운 환산 지표</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Car className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">이해하기 쉬운 환산 지표</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 md:gap-4">
             <Card className="text-center">
-              <CardContent className="pt-6">
-                <TreePine className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                <p className="text-sm text-slate-500">30년생 소나무 1그루</p>
-                <p className="text-lg font-bold text-slate-800">≈ 0.5 tC</p>
+              <CardContent className="pt-4 md:pt-6 px-2 md:px-6">
+                <TreePine className="w-8 h-8 md:w-12 md:h-12 text-green-600 mx-auto mb-2 md:mb-3" />
+                <p className="text-[10px] md:text-sm text-slate-500">30년생 소나무</p>
+                <p className="text-sm md:text-lg font-bold text-slate-800">≈ 0.5 tC</p>
               </CardContent>
             </Card>
             <Card className="text-center">
-              <CardContent className="pt-6">
-                <Car className="w-12 h-12 text-orange-500 mx-auto mb-3" />
-                <p className="text-sm text-slate-500">승용차 연간 배출량</p>
-                <p className="text-lg font-bold text-slate-800">≈ 4.6 tCO2</p>
+              <CardContent className="pt-4 md:pt-6 px-2 md:px-6">
+                <Car className="w-8 h-8 md:w-12 md:h-12 text-orange-500 mx-auto mb-2 md:mb-3" />
+                <p className="text-[10px] md:text-sm text-slate-500">승용차 연간</p>
+                <p className="text-sm md:text-lg font-bold text-slate-800">≈ 4.6 tCO2</p>
               </CardContent>
             </Card>
             <Card className="text-center">
-              <CardContent className="pt-6">
-                <Home className="w-12 h-12 text-blue-500 mx-auto mb-3" />
-                <p className="text-sm text-slate-500">가구 연간 배출량</p>
-                <p className="text-lg font-bold text-slate-800">≈ 2.5 tCO2</p>
+              <CardContent className="pt-4 md:pt-6 px-2 md:px-6">
+                <Home className="w-8 h-8 md:w-12 md:h-12 text-blue-500 mx-auto mb-2 md:mb-3" />
+                <p className="text-[10px] md:text-sm text-slate-500">가구 연간</p>
+                <p className="text-sm md:text-lg font-bold text-slate-800">≈ 2.5 tCO2</p>
               </CardContent>
             </Card>
           </div>
         </section>
 
         {/* 기술 스택 */}
-        <section className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <Code className="w-6 h-6 text-green-600" />
-            <h2 className="text-2xl font-bold text-slate-800">기술 스택</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Code className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">기술 스택</h2>
           </div>
           <Card>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-6">
+            <CardContent className="pt-4 md:pt-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <h3 className="font-semibold text-slate-700 mb-3">프론트엔드</h3>
                   <div className="flex flex-wrap gap-2">
@@ -389,12 +389,12 @@ export default function AboutPage() {
         </section>
 
         {/* 참고 자료 */}
-        <section className="mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <ExternalLink className="w-6 h-6 text-green-600" />
-            <h2 className="text-2xl font-bold text-slate-800">참고 자료</h2>
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <ExternalLink className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">참고 자료</h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <Card>
               <CardContent className="pt-6">
                 <h3 className="font-semibold text-slate-700 mb-3">경기기후플랫폼</h3>
@@ -428,15 +428,15 @@ export default function AboutPage() {
         </section>
 
         {/* CTA */}
-        <section className="text-center py-8">
+        <section className="text-center py-6 md:py-8">
           <Card className="bg-gradient-to-r from-green-500 to-emerald-500 border-0 text-white">
-            <CardContent className="py-8">
-              <h2 className="text-2xl font-bold mb-4">지금 바로 시뮬레이션을 시작하세요</h2>
-              <p className="text-green-100 mb-6">
+            <CardContent className="py-6 md:py-8 px-4">
+              <h2 className="text-lg md:text-2xl font-bold mb-3 md:mb-4">지금 바로 시뮬레이션을 시작하세요</h2>
+              <p className="text-sm md:text-base text-green-100 mb-4 md:mb-6">
                 경기도 어느 땅이든, 개발과 보전의 탄소 영향을 확인할 수 있습니다.
               </p>
               <Link href="/">
-                <Button size="lg" variant="secondary" className="font-semibold">
+                <Button size="default" variant="secondary" className="font-semibold text-sm md:text-base">
                   시뮬레이터 시작하기
                 </Button>
               </Link>
@@ -446,15 +446,15 @@ export default function AboutPage() {
       </main>
 
       {/* 푸터 */}
-      <footer className="bg-slate-800 text-slate-400 py-8">
+      <footer className="bg-slate-800 text-slate-400 py-6 md:py-8">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <p className="text-sm mb-2">
+          <p className="text-xs md:text-sm mb-2">
             경기 기후 바이브코딩 해커톤 2025 참가작
           </p>
-          <p className="text-xs">
+          <p className="text-[10px] md:text-xs">
             데이터 출처: 경기기후플랫폼 | 탄소 계수: IPCC 가이드라인 기반
           </p>
-          <div className="mt-4">
+          <div className="mt-3 md:mt-4">
             <a
               href="https://github.com/yonghwan1106/carbonland"
               target="_blank"
@@ -462,7 +462,7 @@ export default function AboutPage() {
               className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
             >
               <Github className="w-4 h-4" />
-              <span className="text-sm">GitHub</span>
+              <span className="text-xs md:text-sm">GitHub</span>
             </a>
           </div>
         </div>

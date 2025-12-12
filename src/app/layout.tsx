@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,6 +17,14 @@ export const metadata: Metadata = {
   description: "이 땅을 개발하면, 탄소는 얼마나 변할까? 경기도 토지이용 변경에 따른 탄소 영향을 시뮬레이션합니다.",
   keywords: ["탄소중립", "토지이용", "시뮬레이션", "경기도", "기후변화", "탄소흡수"],
   authors: [{ name: "경기 기후 바이브코딩 해커톤 2025" }],
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
