@@ -82,11 +82,20 @@ export const CONVERSION_FACTORS = {
 // 경기기후플랫폼 API 관련
 export const CLIMATE_API = {
   BASE_URL: 'https://climate.gg.go.kr/ols/api/geoserver',
+  // WMS 레이어 (지도 표시용)
   LAYERS: {
     NPP: 'spggcee:rst_npp',                           // 탄소흡수지도 (NPP)
     TREE_CARBON: 'spggcee:plnt_cbn_strgat_biotop',    // 수목 탄소저장지도
     SOIL_CARBON: 'spggcee:rst_soil_cbn_strgat_32652', // 토양 탄소저장지도
     BIOTOP: 'spggcee:biotop_lclsf',                   // 비오톱 유형도
+  },
+  // WFS 레이어 (데이터 조회용)
+  WFS_LAYERS: {
+    BIOTOP_CARBON: 'spggcee:biotop_cbn_abpvl',        // 비오톱 탄소흡수량
+    TREE_CARBON: 'spggcee:plnt_cbn_strgat_biotop',    // 수목 탄소저장량
+    SOIL_CARBON: 'spggcee:soil_cbn_strgat',           // 토양 탄소저장량
+    BIOTOP_MID: 'spggcee:biotop_mclsf',               // 비오톱 중분류
+    BIOTOP_LARGE: 'spggcee:biotop_lclsf',             // 비오톱 대분류
   },
 } as const;
 

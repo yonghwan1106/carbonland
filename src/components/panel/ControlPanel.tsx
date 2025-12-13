@@ -15,7 +15,8 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, TreePine, Trash2, Play, RotateCcw, Navigation } from 'lucide-react';
+import { MapPin, TreePine, Trash2, Play, RotateCcw, Navigation, Search, Sparkles, Loader2 } from 'lucide-react';
+import AddressSearch from '@/components/map/AddressSearch';
 
 interface ControlPanelProps {
   isMobile?: boolean;
@@ -38,6 +39,9 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
     resetSimulation,
     presetAreas,
     selectPresetArea,
+    isAutoDetecting,
+    autoDetectedLandUse,
+    biotopAnalysis,
   } = useStore();
 
   const landUseOptions = Object.entries(CARBON_COEFFICIENTS).map(([key, value]) => ({
@@ -51,6 +55,19 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
     return (
       <div className="h-full max-h-[calc(80vh-56px)] overflow-y-auto bg-white">
         <div className="p-4 space-y-4 pb-8">
+          {/* 주소 검색 */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                주소 검색
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AddressSearch isMobile />
+            </CardContent>
+          </Card>
+
           {/* 데모 영역 선택 (프리셋) */}
           <Card className="border-green-200 bg-green-50">
             <CardHeader className="pb-2">
@@ -128,6 +145,18 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
               <CardTitle className="text-sm flex items-center gap-2">
                 <TreePine className="w-4 h-4" />
                 현재 토지이용
+                {isAutoDetecting && (
+                  <Badge variant="outline" className="text-xs ml-auto">
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    감지중
+                  </Badge>
+                )}
+                {autoDetectedLandUse && !isAutoDetecting && (
+                  <Badge variant="default" className="text-xs ml-auto bg-purple-600">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    자동감지
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -152,6 +181,12 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
                   ))}
                 </SelectContent>
               </Select>
+
+              {biotopAnalysis && autoDetectedLandUse && (
+                <p className="text-xs text-purple-600">
+                  비오톱 분석: {biotopAnalysis.dominantTypeName} ({biotopAnalysis.dominantTypeRatio.toFixed(0)}%)
+                </p>
+              )}
 
               {currentStatus && (
                 <div className="bg-slate-50 rounded-lg p-3 space-y-1 text-sm">
@@ -241,6 +276,19 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* 주소 검색 */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              주소 검색
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AddressSearch />
+          </CardContent>
+        </Card>
+
         {/* 데모 영역 선택 (프리셋) */}
         <Card className="border-green-200 bg-green-50">
           <CardHeader className="pb-2">
@@ -328,6 +376,18 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
             <CardTitle className="text-sm flex items-center gap-2">
               <TreePine className="w-4 h-4" />
               현재 토지이용
+              {isAutoDetecting && (
+                <Badge variant="outline" className="text-xs ml-auto">
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  감지중
+                </Badge>
+              )}
+              {autoDetectedLandUse && !isAutoDetecting && (
+                <Badge variant="default" className="text-xs ml-auto bg-purple-600">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  자동감지
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -352,6 +412,12 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
                 ))}
               </SelectContent>
             </Select>
+
+            {biotopAnalysis && autoDetectedLandUse && (
+              <p className="text-xs text-purple-600">
+                비오톱 분석: {biotopAnalysis.dominantTypeName} ({biotopAnalysis.dominantTypeRatio.toFixed(0)}%)
+              </p>
+            )}
 
             {currentStatus && (
               <div className="bg-slate-50 rounded-lg p-3 space-y-2">

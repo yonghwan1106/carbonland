@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { useStore } from '@/stores/useStore';
 import { CARBON_COEFFICIENTS } from '@/lib/constants';
 import { formatNumber } from '@/lib/carbonCalc';
@@ -7,14 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TreeDeciduous, Car, Home, ArrowRight, TrendingDown, TrendingUp, BarChart3, LineChart } from 'lucide-react';
-import { ScenarioComparisonChart, YearlyCarbonChart, BeforeAfterChart } from './Charts';
+import { TreeDeciduous, Car, Home, ArrowRight, TrendingDown, TrendingUp, BarChart3, LineChart, Database, Loader2 } from 'lucide-react';
+import { ScenarioComparisonChart, YearlyCarbonChart, BeforeAfterChart, MultiScenarioTable } from './Charts';
+import ExportActions from './ExportActions';
 
 interface ResultPanelProps {
   isMobile?: boolean;
 }
 
 export default function ResultPanel({ isMobile = false }: ResultPanelProps) {
+  const resultPanelRef = useRef<HTMLDivElement>(null);
   const {
     simulationResult,
     currentLandUse,
@@ -22,6 +25,9 @@ export default function ResultPanel({ isMobile = false }: ResultPanelProps) {
     timeHorizon,
     selectedArea,
     scenarioComparison,
+    dataSource,
+    isLoadingApiData,
+    apiCarbonData,
   } = useStore();
 
   // 아무것도 선택되지 않은 경우
@@ -49,12 +55,41 @@ export default function ResultPanel({ isMobile = false }: ResultPanelProps) {
     );
   }
 
+  // 데이터 출처 표시 컴포넌트
+  const DataSourceBadge = () => (
+    <div className="flex items-center gap-2">
+      {isLoadingApiData ? (
+        <Badge variant="outline" className="text-xs">
+          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+          API 데이터 조회 중...
+        </Badge>
+      ) : dataSource === 'api' ? (
+        <Badge variant="default" className="text-xs bg-green-600">
+          <Database className="w-3 h-3 mr-1" />
+          경기기후플랫폼 API
+          {apiCarbonData && ` (${apiCarbonData.featureCount}개 피처)`}
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="text-xs">
+          <Database className="w-3 h-3 mr-1" />
+          시뮬레이션 데이터
+        </Badge>
+      )}
+    </div>
+  );
+
   // 영역은 선택됐지만 시뮬레이션 전
   if (!simulationResult) {
     if (isMobile) {
       return (
-        <div className="h-full max-h-[calc(80vh-56px)] bg-slate-50 flex flex-col overflow-hidden">
+        <div className="h-full max-h-[calc(80vh-56px)] bg-slate-50 flex flex-col overflow-hidden" ref={resultPanelRef}>
           <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-8">
+            {/* 헤더 */}
+            <div className="flex justify-between items-center">
+              <DataSourceBadge />
+              <ExportActions resultPanelRef={resultPanelRef} isMobile />
+            </div>
+
             {/* 시나리오 비교 차트 */}
             {scenarioComparison.length > 0 && <ScenarioComparisonChart />}
 
@@ -71,15 +106,26 @@ export default function ResultPanel({ isMobile = false }: ResultPanelProps) {
       );
     }
     return (
-      <div className="w-96 h-full bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden">
+      <div className="w-96 h-full bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden" ref={resultPanelRef}>
         <div className="p-4 border-b border-slate-200 bg-white">
-          <h2 className="text-lg font-bold text-slate-800">분석 결과</h2>
-          <p className="text-sm text-slate-500">시나리오 비교</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-lg font-bold text-slate-800">분석 결과</h2>
+              <p className="text-sm text-slate-500">시나리오 비교</p>
+            </div>
+            <ExportActions resultPanelRef={resultPanelRef} />
+          </div>
+          <div className="mt-2">
+            <DataSourceBadge />
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* 시나리오 비교 차트 */}
           {scenarioComparison.length > 0 && <ScenarioComparisonChart />}
+
+          {/* 다중 시나리오 비교 테이블 */}
+          {scenarioComparison.length > 0 && <MultiScenarioTable />}
 
           {/* 안내 메시지 */}
           <Card className="border-blue-200 bg-blue-50">
@@ -101,8 +147,14 @@ export default function ResultPanel({ isMobile = false }: ResultPanelProps) {
   // 모바일 레이아웃
   if (isMobile) {
     return (
-      <div className="h-full max-h-[calc(80vh-56px)] bg-slate-50 flex flex-col overflow-hidden">
+      <div className="h-full max-h-[calc(80vh-56px)] bg-slate-50 flex flex-col overflow-hidden" ref={resultPanelRef}>
         <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-8">
+          {/* 헤더 */}
+          <div className="flex justify-between items-center">
+            <DataSourceBadge />
+            <ExportActions resultPanelRef={resultPanelRef} isMobile />
+          </div>
+
           {/* 토지이용 변화 - 간소화 */}
           <Card>
             <CardContent className="pt-4">
@@ -207,11 +259,19 @@ export default function ResultPanel({ isMobile = false }: ResultPanelProps) {
 
   // 데스크톱 레이아웃
   return (
-    <div className="w-96 h-full bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden">
+    <div className="w-96 h-full bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden" ref={resultPanelRef}>
       {/* 헤더 */}
       <div className="p-4 border-b border-slate-200 bg-white">
-        <h2 className="text-lg font-bold text-slate-800">시뮬레이션 결과</h2>
-        <p className="text-sm text-slate-500">{timeHorizon}년 기준 분석</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">시뮬레이션 결과</h2>
+            <p className="text-sm text-slate-500">{timeHorizon}년 기준 분석</p>
+          </div>
+          <ExportActions resultPanelRef={resultPanelRef} />
+        </div>
+        <div className="mt-2">
+          <DataSourceBadge />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

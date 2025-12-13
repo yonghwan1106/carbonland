@@ -191,3 +191,100 @@ export function BeforeAfterChart() {
     </Card>
   );
 }
+
+// 다중 시나리오 비교 테이블
+export function MultiScenarioTable() {
+  const { scenarioComparison, currentLandUse, timeHorizon } = useStore();
+
+  if (scenarioComparison.length === 0) return null;
+
+  // 순 탄소수지 기준으로 정렬 (높은 것이 좋음)
+  const sortedScenarios = [...scenarioComparison].sort(
+    (a, b) => b.netChange - a.netChange
+  );
+
+  // 현재 시나리오 찾기
+  const currentScenario = scenarioComparison.find(s => s.label === '현재 유지');
+  const currentNetChange = currentScenario?.netChange || 0;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">전체 시나리오 상세 비교</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th className="text-left py-2 px-1 font-medium text-slate-600">시나리오</th>
+                <th className="text-right py-2 px-1 font-medium text-slate-600">저장량</th>
+                <th className="text-right py-2 px-1 font-medium text-slate-600">순수지</th>
+                <th className="text-right py-2 px-1 font-medium text-slate-600">{timeHorizon}년 누적</th>
+                <th className="text-right py-2 px-1 font-medium text-slate-600">비교</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedScenarios.map((scenario, index) => {
+                const cumulativeChange = scenario.netChange * timeHorizon;
+                const diffFromCurrent = scenario.netChange - currentNetChange;
+                const isBest = index === 0;
+                const isCurrent = scenario.label === '현재 유지';
+
+                return (
+                  <tr
+                    key={scenario.scenario}
+                    className={`border-b border-slate-100 ${
+                      isCurrent ? 'bg-blue-50' : isBest ? 'bg-green-50' : ''
+                    }`}
+                  >
+                    <td className="py-2 px-1">
+                      <div className="flex items-center gap-1">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: scenario.color }}
+                        />
+                        <span className={isBest ? 'font-medium' : ''}>
+                          {scenario.label}
+                          {isBest && !isCurrent && ' ★'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="text-right py-2 px-1 font-mono">
+                      {formatNumber(scenario.storage, 0)}
+                    </td>
+                    <td className={`text-right py-2 px-1 font-mono ${
+                      scenario.netChange >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {scenario.netChange >= 0 ? '+' : ''}
+                      {formatNumber(scenario.netChange, 1)}
+                    </td>
+                    <td className={`text-right py-2 px-1 font-mono ${
+                      cumulativeChange >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {cumulativeChange >= 0 ? '+' : ''}
+                      {formatNumber(cumulativeChange, 0)}
+                    </td>
+                    <td className={`text-right py-2 px-1 font-mono text-[10px] ${
+                      diffFromCurrent > 0 ? 'text-green-600' : diffFromCurrent < 0 ? 'text-red-600' : 'text-slate-400'
+                    }`}>
+                      {isCurrent ? '-' : (
+                        <>
+                          {diffFromCurrent > 0 ? '▲' : diffFromCurrent < 0 ? '▼' : ''}
+                          {Math.abs(diffFromCurrent).toFixed(1)}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-[10px] text-slate-500 mt-2">
+          ★ 탄소중립 관점 최적 시나리오 / 단위: tC, tC/yr
+        </p>
+      </CardContent>
+    </Card>
+  );
+}

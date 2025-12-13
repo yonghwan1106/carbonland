@@ -46,65 +46,63 @@
 
 **변경 파일:** `src/components/map/MapContainer.tsx`
 
-### 2.3 주소 검색 기능
+### 2.3 주소 검색 기능 ✅ 완료
 
 **설명:** 사용자가 주소를 입력하면 해당 위치로 지도 이동
 
-**구현 방안:**
-- Kakao/Naver 주소 검색 API 연동
-- 또는 OpenStreetMap Nominatim API 사용
+**해결 완료:**
+- OpenStreetMap Nominatim API 사용
+- AddressSearch 컴포넌트 생성 (`src/components/map/AddressSearch.tsx`)
+- ControlPanel에 통합 (모바일/데스크톱)
 
-### 2.4 WFS 연동 - 실제 탄소 데이터 조회
+### 2.4 WFS 연동 - 실제 탄소 데이터 조회 ✅ 완료
 
 **설명:** 선택 영역의 실제 NPP, 탄소저장량 데이터 조회
 
-**구현 방안:**
-```typescript
-// climateApi.ts에 추가
-export async function getCarbonDataForArea(
-  bbox: number[]
-): Promise<CarbonData | null> {
-  const features = await getFeatures(CLIMATE_API.LAYERS.NPP, bbox);
-  // 피처에서 탄소 데이터 추출 및 통계 계산
-  return calculateCarbonStatistics(features);
-}
-```
+**해결 완료:**
+- `climateApi.ts`에 `getCarbonDataForArea` 함수 추가
+- WFS 피처 조회 및 탄소 데이터 집계 구현
+- API 데이터 사용 시 "경기기후플랫폼 API" 배지 표시
+- API 데이터 없을 시 시뮬레이션 데이터로 fallback
 
 ---
 
 ## 3. 중기 개선사항
 
-### 3.1 결과 저장/공유 기능
+### 3.1 결과 저장/공유 기능 ✅ 완료
 
 **기능:**
 - 시뮬레이션 결과를 이미지로 저장
 - PDF 리포트 생성
 - URL 공유 (쿼리 파라미터에 설정 저장)
 
-**라이브러리:**
-- html2canvas: 결과 패널 이미지 캡처
-- jsPDF: PDF 생성
+**해결 완료:**
+- `ExportActions` 컴포넌트 생성 (`src/components/result/ExportActions.tsx`)
+- html2canvas로 이미지 저장 기능 구현
+- jsPDF로 PDF 리포트 생성 기능 구현
+- 공유 URL 복사 기능 구현
+- ResultPanel 헤더에 저장/공유 버튼 통합
 
-### 3.2 비오톱 자동 감지
+### 3.2 비오톱 자동 감지 ✅ 완료
 
 **설명:** 선택 영역의 현재 토지이용 유형을 WFS로 자동 분석
 
-**구현 방안:**
-```typescript
-// 비오톱 레이어에서 피처 조회
-const biotopFeatures = await getFeatures(CLIMATE_API.LAYERS.BIOTOP, bbox);
-// 면적 비율로 주요 토지이용 유형 결정
-const dominantType = analyzeBiotopDistribution(biotopFeatures);
-```
+**해결 완료:**
+- `climateApi.ts`에 `analyzeBiotopForArea` 함수 추가
+- 비오톱 대분류 레이어 WFS 조회
+- 면적 비율 기반 주요 토지이용 유형 자동 결정
+- "자동감지" 배지로 시각적 피드백 제공
+- 사용자가 수동으로 토지이용 유형 변경 가능
 
-### 3.3 다중 시나리오 비교
+### 3.3 다중 시나리오 비교 ✅ 완료
 
 **설명:** 여러 시나리오를 동시에 비교하는 화면
 
-**UI 제안:**
-- 시나리오 카드 추가/제거 기능
-- 나란히 비교 테이블
-- 종합 비교 차트
+**해결 완료:**
+- 7개 전체 시나리오 비교 지원 (현재유지, 산림, 습지, 초지, 농경지, 주거, 상업, 공업)
+- `MultiScenarioTable` 컴포넌트로 상세 비교 테이블 추가
+- 탄소중립 관점 최적 시나리오 표시 (★)
+- 현재 대비 변화량 시각화 (▲/▼)
 
 ---
 
@@ -180,16 +178,18 @@ try {
 
 ## 6. 우선순위 요약
 
-| 우선순위 | 항목 | 상태 | 예상 소요 |
-|----------|------|------|-----------|
-| **즉시** | 푸터 문구 수정 | ✅ 완료 | 5분 |
-| **P1** | 모바일 레이어 접근성 | ✅ 완료 | 1시간 |
-| **P1** | 주소 검색 기능 | ⬜ 미완료 | 2시간 |
-| **P2** | WMS 로딩 인디케이터 | ✅ 완료 | 30분 |
-| **P2** | WFS 실제 데이터 연동 | ⬜ 미완료 | 3시간 |
-| **P2** | 결과 저장/공유 | ⬜ 미완료 | 2시간 |
-| **P3** | 비오톱 자동 감지 | ⬜ 미완료 | 2시간 |
-| **P3** | 다중 시나리오 비교 | ⬜ 미완료 | 4시간 |
+| 우선순위 | 항목 | 상태 |
+|----------|------|------|
+| **즉시** | 푸터 문구 수정 | ✅ 완료 |
+| **P1** | 모바일 레이어 접근성 | ✅ 완료 |
+| **P1** | 주소 검색 기능 | ✅ 완료 |
+| **P2** | WMS 로딩 인디케이터 | ✅ 완료 |
+| **P2** | WFS 실제 데이터 연동 | ✅ 완료 |
+| **P2** | 결과 저장/공유 | ✅ 완료 |
+| **P3** | 비오톱 자동 감지 | ✅ 완료 |
+| **P3** | 다중 시나리오 비교 | ✅ 완료 |
+
+**모든 개선사항 완료! (2025-12-13)**
 
 ---
 

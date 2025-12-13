@@ -207,21 +207,26 @@ export function generateScenarioComparison(
   areaHa: number,
   currentType: LandUseType
 ): ScenarioComparisonData[] {
-  const scenarios: { type: LandUseType; label: string; color: string }[] = [
-    { type: currentType, label: '현재 유지', color: '#3b82f6' },
+  // 모든 시나리오 포함 (다중 시나리오 비교)
+  const allScenarios: { type: LandUseType; label: string; color: string }[] = [
+    { type: 'FOREST', label: '산림 복원', color: '#166534' },
+    { type: 'WETLAND', label: '습지 조성', color: '#0ea5e9' },
+    { type: 'GRASSLAND', label: '공원녹지', color: '#22c55e' },
+    { type: 'AGRICULTURAL', label: '농경지', color: '#84cc16' },
     { type: 'RESIDENTIAL', label: '주거지 개발', color: '#f97316' },
     { type: 'COMMERCIAL', label: '상업지 개발', color: '#ef4444' },
-    { type: 'FOREST', label: '산림 복원', color: '#22c55e' },
+    { type: 'INDUSTRIAL', label: '공업지 개발', color: '#7c3aed' },
   ];
 
-  // 중복 제거
-  const uniqueScenarios = scenarios.filter(
-    (s, i, arr) => arr.findIndex(x => x.type === s.type) === i
-  );
+  // 현재 유지 시나리오를 맨 앞에 추가
+  const scenarios = [
+    { type: currentType, label: '현재 유지', color: '#3b82f6' },
+    ...allScenarios.filter(s => s.type !== currentType),
+  ];
 
   const { CARBON_COEFFICIENTS } = require('./constants');
 
-  return uniqueScenarios.map(s => {
+  return scenarios.map(s => {
     const coef = CARBON_COEFFICIENTS[s.type];
     return {
       scenario: s.type,

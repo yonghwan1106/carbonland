@@ -1,6 +1,6 @@
 // 경기기후플랫폼 API 유틸리티
 
-import { CLIMATE_API } from './constants';
+import { CLIMATE_API, type LandUseType } from './constants';
 
 // API 키 (환경 변수에서 가져옴)
 export const API_KEY = process.env.NEXT_PUBLIC_CLIMATE_API_KEY || '';
@@ -130,4 +130,360 @@ export const WMS_LAYERS = {
 // API 키 유효성 검사
 export function isApiKeyValid(): boolean {
   return API_KEY.length > 0;
+}
+
+// 탄소 데이터 타입 정의
+export interface CarbonDataFromAPI {
+  totalAbsorption: number;      // 총 탄소흡수량 (tC/yr)
+  totalTreeStorage: number;     // 수목 탄소저장량 (tC)
+  totalSoilStorage: number;     // 토양 탄소저장량 (tC)
+  totalStorage: number;         // 총 탄소저장량 (tC)
+  featureCount: number;         // 조회된 피처 수
+  dataSource: 'api' | 'mock';   // 데이터 출처
+  biotopTypes: BiotopTypeData[]; // 비오톱 유형별 분포
+}
+
+export interface BiotopTypeData {
+  type: string;                  // 비오톱 유형명
+  code: string;                  // 비오톱 코드
+  area: number;                  // 면적 (ha)
+  ratio: number;                 // 비율 (%)
+  carbonAbsorption: number;      // 탄소 흡수량 (tC/yr)
+  carbonStorage: number;         // 탄소 저장량 (tC)
+}
+
+// EPSG:4326 (WGS84) bbox를 EPSG:5186 (Korea 2000)으로 변환하는 간이 함수
+// 실제 프로덕션에서는 proj4를 사용하는 것이 좋음
+function transformBboxToEPSG5186(bbox: [number, number, number, number]): number[] {
+  // 간략화된 변환 (경기도 지역에 최적화)
+  // EPSG:4326 (lon, lat) -> EPSG:5186 (x, y)
+  const [minLon, minLat, maxLon, maxLat] = bbox;
+
+  // 경기도 중심 기준 간이 변환 계수
+  const lonOrigin = 127.0;
+  const latOrigin = 37.5;
+  const meterPerDegLon = 88000; // 경기도 위도에서의 대략적인 값
+  const meterPerDegLat = 111000;
+
+  const minX = 200000 + (minLon - lonOrigin) * meterPerDegLon;
+  const minY = 500000 + (minLat - latOrigin) * meterPerDegLat;
+  const maxX = 200000 + (maxLon - lonOrigin) * meterPerDegLon;
+  const maxY = 500000 + (maxLat - latOrigin) * meterPerDegLat;
+
+  return [minX, minY, maxX, maxY];
+}
+
+// WFS 피처 조회 (EPSG:5186 좌표계 지원)
+export async function getFeaturesInArea(
+  layerName: string,
+  bbox: [number, number, number, number],
+  maxFeatures: number = 100
+): Promise<GeoJSON.FeatureCollection | null> {
+  try {
+    // bbox를 EPSG:5186으로 변환
+    const transformedBbox = transformBboxToEPSG5186(bbox);
+
+    const params = new URLSearchParams({
+      apiKey: API_KEY,
+      SERVICE: 'WFS',
+      VERSION: '1.1.0',
+      REQUEST: 'GetFeature',
+      TYPENAMES: layerName,
+      OUTPUTFORMAT: 'application/json',
+      BBOX: [...transformedBbox, 'EPSG:5186'].join(','),
+      MAXFEATURES: maxFeatures.toString(),
+      SRSNAME: 'EPSG:5186',
+    });
+
+    const url = `${CLIMATE_API.BASE_URL}/wfs?${params.toString()}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.warn('WFS 요청 실패:', response.status, response.statusText);
+      return null;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.warn('WFS 피처 조회 오류:', error);
+    return null;
+  }
+}
+
+// 비오톱 코드를 LandUseType으로 매핑
+export function mapBiotopToLandUseType(biotopCode: string): LandUseType {
+  // 비오톱 대분류 코드 기반 매핑
+  // 경기기후플랫폼 비오톱 분류 체계에 따름
+  const codePrefix = biotopCode.substring(0, 1).toUpperCase();
+  const fullCode = biotopCode.toUpperCase();
+
+  // 산림 관련
+  if (codePrefix === 'F' || fullCode.includes('FOREST') || fullCode.includes('산림')) {
+    return 'FOREST';
+  }
+  // 초지/녹지 관련
+  if (codePrefix === 'G' || fullCode.includes('GRASS') || fullCode.includes('초지') || fullCode.includes('녹지')) {
+    return 'GRASSLAND';
+  }
+  // 농경지 관련
+  if (codePrefix === 'A' || fullCode.includes('AGRI') || fullCode.includes('농') || fullCode.includes('밭') || fullCode.includes('논')) {
+    return 'AGRICULTURAL';
+  }
+  // 습지 관련
+  if (codePrefix === 'W' || fullCode.includes('WET') || fullCode.includes('습지') || fullCode.includes('하천')) {
+    return 'WETLAND';
+  }
+  // 주거지 관련
+  if (codePrefix === 'R' || fullCode.includes('RESI') || fullCode.includes('주거') || fullCode.includes('주택')) {
+    return 'RESIDENTIAL';
+  }
+  // 상업지 관련
+  if (codePrefix === 'C' || fullCode.includes('COMM') || fullCode.includes('상업') || fullCode.includes('업무')) {
+    return 'COMMERCIAL';
+  }
+  // 공업지 관련
+  if (codePrefix === 'I' || fullCode.includes('INDU') || fullCode.includes('공업') || fullCode.includes('공장')) {
+    return 'INDUSTRIAL';
+  }
+
+  // 숫자 코드 기반 매핑 (비오톱 대분류 코드)
+  if (/^[1-9]/.test(biotopCode)) {
+    const numCode = parseInt(biotopCode.charAt(0));
+    switch (numCode) {
+      case 1: // 산림
+      case 2: // 녹지
+        return 'FOREST';
+      case 3: // 초지
+        return 'GRASSLAND';
+      case 4: // 농경지
+        return 'AGRICULTURAL';
+      case 5: // 습지
+        return 'WETLAND';
+      case 6: // 주거
+        return 'RESIDENTIAL';
+      case 7: // 상업/업무
+        return 'COMMERCIAL';
+      case 8: // 공업
+        return 'INDUSTRIAL';
+    }
+  }
+
+  // 기본값: 초지
+  return 'GRASSLAND';
+}
+
+// 비오톱 분석 결과 타입
+export interface BiotopAnalysisResult {
+  dominantType: LandUseType;
+  dominantTypeName: string;
+  dominantTypeRatio: number;
+  allTypes: Array<{
+    type: LandUseType;
+    typeName: string;
+    area: number;
+    ratio: number;
+  }>;
+  featureCount: number;
+  dataSource: 'api' | 'mock';
+}
+
+// 선택 영역의 비오톱 분석 (주요 토지이용 유형 감지)
+export async function analyzeBiotopForArea(
+  bbox: [number, number, number, number],
+  areaHa: number
+): Promise<BiotopAnalysisResult | null> {
+  if (!isApiKeyValid()) {
+    console.log('API 키 없음 - 비오톱 자동 감지 불가');
+    return null;
+  }
+
+  try {
+    // 비오톱 대분류 레이어에서 피처 조회
+    const biotopFeatures = await getFeaturesInArea(
+      CLIMATE_API.WFS_LAYERS.BIOTOP_LARGE,
+      bbox,
+      100
+    );
+
+    if (!biotopFeatures?.features?.length) {
+      console.log('비오톱 피처 없음');
+      return null;
+    }
+
+    // 토지이용 유형별 면적 집계
+    const typeAreas = new Map<LandUseType, { area: number; name: string }>();
+
+    for (const feature of biotopFeatures.features) {
+      const props = feature.properties as Record<string, unknown>;
+
+      // 비오톱 코드 및 면적 추출 (다양한 속성명 지원)
+      const biotopCode = String(
+        props.lclsf_cd || props.biotop_cd || props.code || props.lclsf_nm || ''
+      );
+      const biotopName = String(
+        props.lclsf_nm || props.biotop_nm || props.name || '기타'
+      );
+      const featureArea = Number(props.area || props.shp_area || 0) / 10000; // m² -> ha
+
+      if (!biotopCode) continue;
+
+      const landUseType = mapBiotopToLandUseType(biotopCode);
+
+      if (typeAreas.has(landUseType)) {
+        const existing = typeAreas.get(landUseType)!;
+        existing.area += featureArea;
+      } else {
+        typeAreas.set(landUseType, {
+          area: featureArea,
+          name: biotopName,
+        });
+      }
+    }
+
+    // 면적 기준 정렬
+    const sortedTypes = Array.from(typeAreas.entries())
+      .map(([type, data]) => ({
+        type,
+        typeName: data.name,
+        area: data.area,
+        ratio: areaHa > 0 ? (data.area / areaHa) * 100 : 0,
+      }))
+      .sort((a, b) => b.area - a.area);
+
+    if (sortedTypes.length === 0) {
+      return null;
+    }
+
+    const dominant = sortedTypes[0];
+
+    console.log(`비오톱 자동 감지: ${dominant.typeName} (${dominant.ratio.toFixed(1)}%)`);
+
+    return {
+      dominantType: dominant.type,
+      dominantTypeName: dominant.typeName,
+      dominantTypeRatio: dominant.ratio,
+      allTypes: sortedTypes,
+      featureCount: biotopFeatures.features.length,
+      dataSource: 'api',
+    };
+  } catch (error) {
+    console.error('비오톱 분석 오류:', error);
+    return null;
+  }
+}
+
+// 선택 영역의 탄소 데이터 조회
+export async function getCarbonDataForArea(
+  bbox: [number, number, number, number],
+  areaHa: number
+): Promise<CarbonDataFromAPI | null> {
+  if (!isApiKeyValid()) {
+    console.log('API 키 없음 - mock 데이터 사용');
+    return null;
+  }
+
+  try {
+    // 비오톱 탄소흡수량 레이어 조회
+    const biotopFeatures = await getFeaturesInArea(
+      CLIMATE_API.WFS_LAYERS.BIOTOP_CARBON,
+      bbox,
+      200
+    );
+
+    // 수목 탄소저장량 레이어 조회
+    const treeFeatures = await getFeaturesInArea(
+      CLIMATE_API.WFS_LAYERS.TREE_CARBON,
+      bbox,
+      200
+    );
+
+    // 피처가 없으면 null 반환 (mock 데이터 사용하도록)
+    if (!biotopFeatures?.features?.length && !treeFeatures?.features?.length) {
+      console.log('WFS 피처 없음 - mock 데이터 사용');
+      return null;
+    }
+
+    // 데이터 집계
+    let totalAbsorption = 0;
+    let totalTreeStorage = 0;
+    let totalSoilStorage = 0;
+    const biotopMap = new Map<string, BiotopTypeData>();
+
+    // 비오톱 탄소흡수량 데이터 처리
+    if (biotopFeatures?.features) {
+      for (const feature of biotopFeatures.features) {
+        const props = feature.properties as Record<string, unknown>;
+
+        // 탄소 흡수량 속성 (레이어마다 속성명이 다를 수 있음)
+        const absorption = Number(props.cbn_abpvl || props.npp || props.absorption || 0);
+        const area = Number(props.area || props.shp_area || 0) / 10000; // m² -> ha
+        const biotopCode = String(props.biotop_cd || props.code || 'UNKNOWN');
+        const biotopName = String(props.biotop_nm || props.name || '기타');
+
+        totalAbsorption += absorption * area;
+
+        // 비오톱 유형별 집계
+        if (biotopMap.has(biotopCode)) {
+          const existing = biotopMap.get(biotopCode)!;
+          existing.area += area;
+          existing.carbonAbsorption += absorption * area;
+        } else {
+          biotopMap.set(biotopCode, {
+            type: biotopName,
+            code: biotopCode,
+            area: area,
+            ratio: 0,
+            carbonAbsorption: absorption * area,
+            carbonStorage: 0,
+          });
+        }
+      }
+    }
+
+    // 수목 탄소저장량 데이터 처리
+    if (treeFeatures?.features) {
+      for (const feature of treeFeatures.features) {
+        const props = feature.properties as Record<string, unknown>;
+
+        const treeStorage = Number(props.plnt_cbn_strgat || props.tree_carbon || props.storage || 0);
+        const soilStorage = Number(props.soil_cbn_strgat || props.soil_carbon || 0);
+        const area = Number(props.area || props.shp_area || 0) / 10000; // m² -> ha
+        const biotopCode = String(props.biotop_cd || props.code || 'UNKNOWN');
+
+        totalTreeStorage += treeStorage * area;
+        totalSoilStorage += soilStorage * area;
+
+        // 비오톱 유형별 저장량 업데이트
+        if (biotopMap.has(biotopCode)) {
+          const existing = biotopMap.get(biotopCode)!;
+          existing.carbonStorage += (treeStorage + soilStorage) * area;
+        }
+      }
+    }
+
+    // 비율 계산
+    const biotopTypes = Array.from(biotopMap.values()).map(bt => ({
+      ...bt,
+      ratio: areaHa > 0 ? (bt.area / areaHa) * 100 : 0,
+    })).sort((a, b) => b.area - a.area);
+
+    const totalStorage = totalTreeStorage + totalSoilStorage;
+    const featureCount = (biotopFeatures?.features?.length || 0) + (treeFeatures?.features?.length || 0);
+
+    console.log(`WFS 데이터 조회 완료: ${featureCount}개 피처, 흡수량=${totalAbsorption.toFixed(2)}tC/yr, 저장량=${totalStorage.toFixed(2)}tC`);
+
+    return {
+      totalAbsorption,
+      totalTreeStorage,
+      totalSoilStorage,
+      totalStorage,
+      featureCount,
+      dataSource: 'api',
+      biotopTypes,
+    };
+  } catch (error) {
+    console.error('탄소 데이터 조회 오류:', error);
+    return null;
+  }
 }
