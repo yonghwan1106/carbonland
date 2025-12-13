@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -19,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatNumber } from '@/lib/carbonCalc';
 
 // 시나리오 비교 막대 차트
-export function ScenarioComparisonChart() {
+export const ScenarioComparisonChart = memo(function ScenarioComparisonChart() {
   const { scenarioComparison } = useStore();
 
   if (scenarioComparison.length === 0) return null;
@@ -49,18 +50,21 @@ export function ScenarioComparisonChart() {
       </CardContent>
     </Card>
   );
-}
+});
 
 // 연도별 탄소 변화 시계열 차트
-export function YearlyCarbonChart() {
+export const YearlyCarbonChart = memo(function YearlyCarbonChart() {
   const { yearlyData, timeHorizon } = useStore();
 
-  if (yearlyData.length === 0) return null;
-
   // 5년 단위로 데이터 필터링 (표시 최적화)
-  const filteredData = yearlyData.filter(
-    (_, index) => index === 0 || index % 5 === 0 || index === yearlyData.length - 1
+  const filteredData = useMemo(() =>
+    yearlyData.filter(
+      (_, index) => index === 0 || index % 5 === 0 || index === yearlyData.length - 1
+    ),
+    [yearlyData]
   );
+
+  if (yearlyData.length === 0) return null;
 
   return (
     <Card>
@@ -110,29 +114,29 @@ export function YearlyCarbonChart() {
       </CardContent>
     </Card>
   );
-}
+});
 
 // 변경 전후 비교 막대 차트
-export function BeforeAfterChart() {
+export const BeforeAfterChart = memo(function BeforeAfterChart() {
   const { simulationResult } = useStore();
 
+  const { data, absorptionData } = useMemo(() => {
+    if (!simulationResult) return { data: [], absorptionData: [] };
+    return {
+      data: [{
+        name: '저장량',
+        현재: simulationResult.beforeStatus.totalStorage,
+        변경후: simulationResult.afterStatus.totalStorage,
+      }],
+      absorptionData: [{
+        name: '연간흡수',
+        현재: simulationResult.beforeStatus.totalAbsorption,
+        변경후: simulationResult.afterStatus.totalAbsorption,
+      }],
+    };
+  }, [simulationResult]);
+
   if (!simulationResult) return null;
-
-  const data = [
-    {
-      name: '저장량',
-      현재: simulationResult.beforeStatus.totalStorage,
-      변경후: simulationResult.afterStatus.totalStorage,
-    },
-  ];
-
-  const absorptionData = [
-    {
-      name: '연간흡수',
-      현재: simulationResult.beforeStatus.totalAbsorption,
-      변경후: simulationResult.afterStatus.totalAbsorption,
-    },
-  ];
 
   return (
     <Card>
@@ -190,22 +194,25 @@ export function BeforeAfterChart() {
       </CardContent>
     </Card>
   );
-}
+});
 
 // 다중 시나리오 비교 테이블
-export function MultiScenarioTable() {
-  const { scenarioComparison, currentLandUse, timeHorizon } = useStore();
-
-  if (scenarioComparison.length === 0) return null;
+export const MultiScenarioTable = memo(function MultiScenarioTable() {
+  const { scenarioComparison, timeHorizon } = useStore();
 
   // 순 탄소수지 기준으로 정렬 (높은 것이 좋음)
-  const sortedScenarios = [...scenarioComparison].sort(
-    (a, b) => b.netChange - a.netChange
+  const sortedScenarios = useMemo(() =>
+    [...scenarioComparison].sort((a, b) => b.netChange - a.netChange),
+    [scenarioComparison]
   );
 
-  // 현재 시나리오 찾기
-  const currentScenario = scenarioComparison.find(s => s.label === '현재 유지');
-  const currentNetChange = currentScenario?.netChange || 0;
+  // 현재 시나리오의 순 탄소수지
+  const currentNetChange = useMemo(() => {
+    const currentScenario = scenarioComparison.find(s => s.label === '현재 유지');
+    return currentScenario?.netChange || 0;
+  }, [scenarioComparison]);
+
+  if (scenarioComparison.length === 0) return null;
 
   return (
     <Card>
@@ -287,4 +294,4 @@ export function MultiScenarioTable() {
       </CardContent>
     </Card>
   );
-}
+});
