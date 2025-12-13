@@ -5,13 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Layers, Eye, EyeOff, Info } from 'lucide-react';
+import { Layers, Eye, EyeOff, Info, CheckCircle2 } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { isApiKeyValid } from '@/lib/climateApi';
 
 const LAYER_INFO: Record<string, { description: string; source: string }> = {
   npp: {
@@ -34,6 +35,7 @@ const LAYER_INFO: Record<string, { description: string; source: string }> = {
 
 export default function LayerPanel() {
   const { layers, toggleLayer, setLayerOpacity } = useStore();
+  const apiKeyAvailable = isApiKeyValid();
 
   return (
     <Card className="absolute top-4 right-4 w-64 bg-white/95 backdrop-blur-sm shadow-lg z-10">
@@ -41,9 +43,16 @@ export default function LayerPanel() {
         <CardTitle className="text-sm flex items-center gap-2">
           <Layers className="w-4 h-4" />
           레이어 관리
-          <Badge variant="outline" className="ml-auto text-xs">
-            API 대기중
-          </Badge>
+          {apiKeyAvailable ? (
+            <Badge variant="default" className="ml-auto text-xs bg-green-600">
+              <CheckCircle2 className="w-3 h-3 mr-1" />
+              연결됨
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="ml-auto text-xs">
+              API 대기중
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -55,9 +64,11 @@ export default function LayerPanel() {
                   <Switch
                     checked={layer.visible}
                     onCheckedChange={() => toggleLayer(layer.id)}
-                    disabled
+                    disabled={!apiKeyAvailable}
                   />
-                  <span className="text-sm text-slate-700">{layer.name}</span>
+                  <span className={`text-sm ${apiKeyAvailable ? 'text-slate-700' : 'text-slate-400'}`}>
+                    {layer.name}
+                  </span>
                   <Tooltip>
                     <TooltipTrigger>
                       <Info className="w-3 h-3 text-slate-400" />
@@ -88,7 +99,7 @@ export default function LayerPanel() {
                       max={100}
                       step={10}
                       className="flex-1"
-                      disabled
+                      disabled={!apiKeyAvailable}
                     />
                     <span className="text-xs text-slate-500 w-8">
                       {Math.round(layer.opacity * 100)}%
@@ -100,11 +111,13 @@ export default function LayerPanel() {
           ))}
         </TooltipProvider>
 
-        <div className="pt-2 border-t border-slate-100">
-          <p className="text-xs text-slate-400 text-center">
-            API 키 연동 후 활성화됩니다
-          </p>
-        </div>
+        {!apiKeyAvailable && (
+          <div className="pt-2 border-t border-slate-100">
+            <p className="text-xs text-slate-400 text-center">
+              API 키 연동 후 활성화됩니다
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

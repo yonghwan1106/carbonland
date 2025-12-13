@@ -4,11 +4,13 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useStore } from '@/stores/useStore';
 import { MAP_CONFIG, CARBON_COEFFICIENTS } from '@/lib/constants';
 import { m2ToHa } from '@/lib/carbonCalc';
+import { createWMSSourceConfig, WMS_LAYERS, isApiKeyValid } from '@/lib/climateApi';
 
 // OpenLayers 타입
 import type OlMap from 'ol/Map';
 import type { Draw as OlDraw } from 'ol/interaction';
 import type { Vector as OlVectorSource } from 'ol/source';
+import type { Tile as OlTileLayer } from 'ol/layer';
 import type { Feature as OlFeature } from 'ol';
 
 export default function MapContainer() {
@@ -17,8 +19,10 @@ export default function MapContainer() {
   const drawRef = useRef<OlDraw | null>(null);
   const vectorSourceRef = useRef<OlVectorSource | null>(null);
   const presetLayerRef = useRef<OlVectorSource | null>(null);
+  const wmsLayersRef = useRef<Map<string, OlTileLayer>>(new Map());
 
   const [isMapReady, setIsMapReady] = useState(false);
+  const [apiKeyStatus, setApiKeyStatus] = useState<boolean>(false);
   const {
     isDrawing,
     setSelectedArea,
@@ -44,7 +48,7 @@ export default function MapContainer() {
         const { default: OlMap } = await import('ol/Map');
         const { default: View } = await import('ol/View');
         const { Tile: TileLayer, Vector: VectorLayer } = await import('ol/layer');
-        const { OSM, Vector: VectorSource } = await import('ol/source');
+        const { OSM, Vector: VectorSource, TileWMS } = await import('ol/source');
         const { Style, Fill, Stroke } = await import('ol/style');
         const { fromLonLat } = await import('ol/proj');
 
@@ -52,9 +56,32 @@ export default function MapContainer() {
           return;
         }
 
+        // API 키 유효성 확인
+        const hasValidApiKey = isApiKeyValid();
+        setApiKeyStatus(hasValidApiKey);
+
         // 기존 자식 요소 정리 (StrictMode 대응)
         while (mapRef.current.firstChild) {
           mapRef.current.removeChild(mapRef.current.firstChild);
+        }
+
+        // WMS 레이어 생성 (API 키가 있을 때만)
+        const wmsLayers: InstanceType<typeof TileLayer>[] = [];
+        if (hasValidApiKey) {
+          Object.values(WMS_LAYERS).forEach((layerConfig) => {
+            const sourceConfig = createWMSSourceConfig(layerConfig.layerName);
+            const wmsSource = new TileWMS(sourceConfig);
+
+            const wmsLayer = new TileLayer({
+              source: wmsSource,
+              visible: layers.find(l => l.id === layerConfig.id)?.visible || false,
+              opacity: layers.find(l => l.id === layerConfig.id)?.opacity || 0.7,
+              properties: { id: layerConfig.id },
+            });
+
+            wmsLayers.push(wmsLayer);
+            wmsLayersRef.current.set(layerConfig.id, wmsLayer);
+          });
         }
 
         // 프리셋 영역 소스
@@ -111,6 +138,7 @@ export default function MapContainer() {
             new TileLayer({
               source: new OSM(),
             }),
+            ...wmsLayers,  // WMS 레이어들 (탄소흡수지도, 수목탄소저장 등)
             presetLayer,
             vectorLayer,
           ],
@@ -138,11 +166,12 @@ export default function MapContainer() {
         mapInstanceRef.current = null;
         vectorSourceRef.current = null;
         presetLayerRef.current = null;
+        wmsLayersRef.current.clear();
         drawRef.current = null;
         setIsMapReady(false);
       }
     };
-  }, []);
+  }, [layers]);
 
   // 드로잉 인터랙션 관리
   useEffect(() => {
@@ -220,10 +249,18 @@ export default function MapContainer() {
     setupDrawing();
   }, [isDrawing, isMapReady, setSelectedArea, setIsDrawing]);
 
-  // 레이어 표시/숨김 관리 (향후 WMS 레이어 추가 시 사용)
+  // 레이어 표시/숨김 관리
   useEffect(() => {
-    // TODO: API 키 설정 후 WMS 레이어 추가
-  }, [layers]);
+    if (!isMapReady || wmsLayersRef.current.size === 0) return;
+
+    layers.forEach((layer) => {
+      const wmsLayer = wmsLayersRef.current.get(layer.id);
+      if (wmsLayer) {
+        wmsLayer.setVisible(layer.visible);
+        wmsLayer.setOpacity(layer.opacity);
+      }
+    });
+  }, [layers, isMapReady]);
 
   // 프리셋 영역 표시
   useEffect(() => {
@@ -311,6 +348,15 @@ export default function MapContainer() {
             <div className="flex items-center gap-2">
               <div className="w-4 h-3 border-2 border-green-600 bg-green-600/30 rounded-sm" />
               <span className="text-slate-600">선택된 영역</span>
+            </div>
+          </div>
+          {/* API 연결 상태 */}
+          <div className="mt-2 pt-2 border-t border-slate-200">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${apiKeyStatus ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className="text-slate-600">
+                {apiKeyStatus ? '경기기후플랫폼 API 연결됨' : 'API 키 없음'}
+              </span>
             </div>
           </div>
         </div>
