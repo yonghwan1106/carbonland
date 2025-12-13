@@ -347,10 +347,10 @@ export default function MapContainer() {
       });
     };
 
-    window.addEventListener('moveToCoordinate', handleMoveToCoordinate as EventListener);
+    window.addEventListener('moveToCoordinate', handleMoveToCoordinate as unknown as EventListener);
 
     return () => {
-      window.removeEventListener('moveToCoordinate', handleMoveToCoordinate as EventListener);
+      window.removeEventListener('moveToCoordinate', handleMoveToCoordinate as unknown as EventListener);
     };
   }, [isMapReady]);
 

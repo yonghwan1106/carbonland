@@ -4,7 +4,8 @@ import { useState, useCallback } from 'react';
 import { useStore } from '@/stores/useStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, MapPin, Loader2 } from 'lucide-react';
+import { Search, MapPin, Loader2, Scan } from 'lucide-react';
+import type { SelectedArea } from '@/types';
 
 interface SearchResult {
   display_name: string;
@@ -12,6 +13,9 @@ interface SearchResult {
   lon: string;
   boundingbox: string[];
 }
+
+// 좌표 주변 영역 생성 (약 200m x 200m)
+const AREA_OFFSET = 0.001; // 약 100m (위도 기준)
 
 interface AddressSearchProps {
   isMobile?: boolean;
@@ -22,7 +26,8 @@ export default function AddressSearch({ isMobile = false }: AddressSearchProps) 
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const { setViewport } = useStore();
+  const [isDetecting, setIsDetecting] = useState(false);
+  const { setViewport, setSelectedArea, isAutoDetecting } = useStore();
 
   const searchAddress = useCallback(async () => {
     if (!query.trim()) return;
@@ -55,17 +60,62 @@ export default function AddressSearch({ isMobile = false }: AddressSearchProps) 
     }
   }, [query]);
 
-  const handleSelect = (result: SearchResult) => {
+  // 주소 선택 시 영역 생성 + 비오톱 자동 감지
+  const handleSelect = async (result: SearchResult, autoDetect: boolean = false) => {
     const lon = parseFloat(result.lon);
     const lat = parseFloat(result.lat);
 
     setViewport({
       center: [lon, lat],
-      zoom: 15,
+      zoom: 16,
     });
 
     setShowResults(false);
     setQuery(result.display_name.split(',')[0]);
+
+    // 자동 감지 옵션이 켜져 있으면 영역 생성 + 비오톱 감지
+    if (autoDetect) {
+      setIsDetecting(true);
+
+      // 좌표 중심으로 약 200m x 200m 사각형 영역 생성
+      const bbox: [number, number, number, number] = [
+        lon - AREA_OFFSET,
+        lat - AREA_OFFSET,
+        lon + AREA_OFFSET,
+        lat + AREA_OFFSET,
+      ];
+
+      // 폴리곤 좌표 생성
+      const polygon: [number, number][][] = [[
+        [bbox[0], bbox[1]],
+        [bbox[2], bbox[1]],
+        [bbox[2], bbox[3]],
+        [bbox[0], bbox[3]],
+        [bbox[0], bbox[1]],
+      ]];
+
+      // 면적 계산 (약 4ha = 200m x 200m)
+      const areaM2 = 200 * 200; // 약 4만 m²
+      const areaHa = areaM2 / 10000;
+
+      const area: SelectedArea = {
+        id: `address-${Date.now()}`,
+        geometry: {
+          type: 'Polygon',
+          coordinates: polygon,
+        },
+        areaM2,
+        areaHa,
+        centroid: [lon, lat],
+        bbox,
+      };
+
+      // 영역 설정 (내부에서 자동으로 비오톱 감지 호출됨)
+      setSelectedArea(area);
+
+      // 감지 완료 대기 후 상태 업데이트
+      setTimeout(() => setIsDetecting(false), 3000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -104,18 +154,46 @@ export default function AddressSearch({ isMobile = false }: AddressSearchProps) 
 
       {/* 검색 결과 드롭다운 */}
       {showResults && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
           {results.map((result, index) => (
-            <button
+            <div
               key={index}
-              onClick={() => handleSelect(result)}
-              className="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-start gap-2 border-b border-slate-100 last:border-0"
+              className="border-b border-slate-100 last:border-0"
             >
-              <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-              <span className="text-sm text-slate-700 line-clamp-2">
-                {result.display_name}
-              </span>
-            </button>
+              {/* 주소 표시 */}
+              <div className="px-3 pt-2 pb-1 flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                <span className="text-sm text-slate-700 line-clamp-2">
+                  {result.display_name}
+                </span>
+              </div>
+              {/* 액션 버튼들 */}
+              <div className="px-3 pb-2 flex gap-2 ml-6">
+                <button
+                  onClick={() => handleSelect(result, false)}
+                  className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                >
+                  이동만
+                </button>
+                <button
+                  onClick={() => handleSelect(result, true)}
+                  disabled={isDetecting || isAutoDetecting}
+                  className="text-xs px-2 py-1 rounded bg-green-100 hover:bg-green-200 text-green-700 transition-colors flex items-center gap-1 disabled:opacity-50"
+                >
+                  {(isDetecting || isAutoDetecting) ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      감지 중...
+                    </>
+                  ) : (
+                    <>
+                      <Scan className="w-3 h-3" />
+                      이동 + 토지 감지
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}
