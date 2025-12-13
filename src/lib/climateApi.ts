@@ -213,41 +213,55 @@ export async function getFeaturesInArea(
   }
 }
 
-// 비오톱 코드를 LandUseType으로 매핑
-export function mapBiotopToLandUseType(biotopCode: string): LandUseType {
-  // 비오톱 대분류 코드 기반 매핑
-  // 경기기후플랫폼 비오톱 분류 체계에 따름
+// 비오톱 코드와 이름을 LandUseType으로 매핑
+// 이름(name)을 우선 사용하고, 없으면 코드(code)로 매핑
+export function mapBiotopToLandUseType(biotopCode: string, biotopName?: string): LandUseType {
+  // 1. 먼저 이름 기반 매핑 (가장 정확함)
+  if (biotopName) {
+    const name = biotopName.toUpperCase();
+
+    // 산림 관련 (자연산림, 인공산림, 산림 등)
+    if (name.includes('산림') || name.includes('FOREST') || name.includes('수림') || name.includes('임지')) {
+      return 'FOREST';
+    }
+    // 초지/녹지 관련
+    if (name.includes('초지') || name.includes('녹지') || name.includes('GRASS') || name.includes('잔디')) {
+      return 'GRASSLAND';
+    }
+    // 습지 관련 (습지가 농경지보다 먼저 체크되어야 함)
+    if (name.includes('습지') || name.includes('하천') || name.includes('WET') || name.includes('수역') || name.includes('호수')) {
+      return 'WETLAND';
+    }
+    // 농경지 관련
+    if (name.includes('농') || name.includes('밭') || name.includes('논') || name.includes('AGRI') || name.includes('경작')) {
+      return 'AGRICULTURAL';
+    }
+    // 주거지 관련
+    if (name.includes('주거') || name.includes('주택') || name.includes('RESI') || name.includes('아파트') || name.includes('단독')) {
+      return 'RESIDENTIAL';
+    }
+    // 상업지 관련
+    if (name.includes('상업') || name.includes('업무') || name.includes('COMM') || name.includes('상가')) {
+      return 'COMMERCIAL';
+    }
+    // 공업지 관련
+    if (name.includes('공업') || name.includes('공장') || name.includes('INDU') || name.includes('산업')) {
+      return 'INDUSTRIAL';
+    }
+  }
+
+  // 2. 코드 기반 매핑 (이름이 없거나 매칭 안된 경우)
   const codePrefix = biotopCode.substring(0, 1).toUpperCase();
   const fullCode = biotopCode.toUpperCase();
 
-  // 산림 관련
-  if (codePrefix === 'F' || fullCode.includes('FOREST') || fullCode.includes('산림')) {
-    return 'FOREST';
-  }
-  // 초지/녹지 관련
-  if (codePrefix === 'G' || fullCode.includes('GRASS') || fullCode.includes('초지') || fullCode.includes('녹지')) {
-    return 'GRASSLAND';
-  }
-  // 농경지 관련
-  if (codePrefix === 'A' || fullCode.includes('AGRI') || fullCode.includes('농') || fullCode.includes('밭') || fullCode.includes('논')) {
-    return 'AGRICULTURAL';
-  }
-  // 습지 관련
-  if (codePrefix === 'W' || fullCode.includes('WET') || fullCode.includes('습지') || fullCode.includes('하천')) {
-    return 'WETLAND';
-  }
-  // 주거지 관련
-  if (codePrefix === 'R' || fullCode.includes('RESI') || fullCode.includes('주거') || fullCode.includes('주택')) {
-    return 'RESIDENTIAL';
-  }
-  // 상업지 관련
-  if (codePrefix === 'C' || fullCode.includes('COMM') || fullCode.includes('상업') || fullCode.includes('업무')) {
-    return 'COMMERCIAL';
-  }
-  // 공업지 관련
-  if (codePrefix === 'I' || fullCode.includes('INDU') || fullCode.includes('공업') || fullCode.includes('공장')) {
-    return 'INDUSTRIAL';
-  }
+  // 알파벳 코드 체크
+  if (codePrefix === 'F' || fullCode.includes('FOREST')) return 'FOREST';
+  if (codePrefix === 'G' || fullCode.includes('GRASS')) return 'GRASSLAND';
+  if (codePrefix === 'W' || fullCode.includes('WET')) return 'WETLAND';
+  if (codePrefix === 'A' || fullCode.includes('AGRI')) return 'AGRICULTURAL';
+  if (codePrefix === 'R' || fullCode.includes('RESI')) return 'RESIDENTIAL';
+  if (codePrefix === 'C' || fullCode.includes('COMM')) return 'COMMERCIAL';
+  if (codePrefix === 'I' || fullCode.includes('INDU')) return 'INDUSTRIAL';
 
   // 숫자 코드 기반 매핑 (비오톱 대분류 코드)
   if (/^[1-9]/.test(biotopCode)) {
@@ -319,18 +333,19 @@ export async function analyzeBiotopForArea(
     for (const feature of biotopFeatures.features) {
       const props = feature.properties as Record<string, unknown>;
 
-      // 비오톱 코드 및 면적 추출 (다양한 속성명 지원)
+      // 비오톱 코드 및 이름 추출 (다양한 속성명 지원)
       const biotopCode = String(
-        props.lclsf_cd || props.biotop_cd || props.code || props.lclsf_nm || ''
+        props.lclsf_cd || props.biotop_cd || props.code || ''
       );
       const biotopName = String(
         props.lclsf_nm || props.biotop_nm || props.name || '기타'
       );
       const featureArea = Number(props.biotop_area || props.area || props.shp_area || 0) / 10000; // m² -> ha
 
-      if (!biotopCode) continue;
+      if (!biotopCode && !biotopName) continue;
 
-      const landUseType = mapBiotopToLandUseType(biotopCode);
+      // 코드와 이름 둘 다 전달하여 정확한 매핑
+      const landUseType = mapBiotopToLandUseType(biotopCode, biotopName);
 
       if (typeAreas.has(landUseType)) {
         const existing = typeAreas.get(landUseType)!;
