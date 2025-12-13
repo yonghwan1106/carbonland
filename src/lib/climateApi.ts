@@ -224,7 +224,7 @@ export function mapBiotopToLandUseType(biotopCode: string, biotopName?: string):
     if (name.includes('산림') || name.includes('FOREST') || name.includes('수림') || name.includes('임지')) {
       return 'FOREST';
     }
-    // 초지/녹지 관련
+    // 초지/녹지 관련 (조성녹지 포함)
     if (name.includes('초지') || name.includes('녹지') || name.includes('GRASS') || name.includes('잔디')) {
       return 'GRASSLAND';
     }
@@ -233,8 +233,12 @@ export function mapBiotopToLandUseType(biotopCode: string, biotopName?: string):
       return 'WETLAND';
     }
     // 농경지 관련
-    if (name.includes('농') || name.includes('밭') || name.includes('논') || name.includes('AGRI') || name.includes('경작')) {
+    if (name.includes('농경') || name.includes('밭') || name.includes('논') || name.includes('AGRI') || name.includes('경작')) {
       return 'AGRICULTURAL';
+    }
+    // 시가화건조지 (도시화 지역) → 주거지로 분류 (공업지 아님!)
+    if (name.includes('시가화') || name.includes('건조지') || name.includes('도시')) {
+      return 'RESIDENTIAL';
     }
     // 주거지 관련
     if (name.includes('주거') || name.includes('주택') || name.includes('RESI') || name.includes('아파트') || name.includes('단독')) {
@@ -244,8 +248,8 @@ export function mapBiotopToLandUseType(biotopCode: string, biotopName?: string):
     if (name.includes('상업') || name.includes('업무') || name.includes('COMM') || name.includes('상가')) {
       return 'COMMERCIAL';
     }
-    // 공업지 관련
-    if (name.includes('공업') || name.includes('공장') || name.includes('INDU') || name.includes('산업')) {
+    // 공업지 관련 (명확히 공업/공장인 경우만)
+    if (name.includes('공업') || name.includes('공장') || name.includes('INDU') || name.includes('산업단지')) {
       return 'INDUSTRIAL';
     }
   }
@@ -254,14 +258,26 @@ export function mapBiotopToLandUseType(biotopCode: string, biotopName?: string):
   const codePrefix = biotopCode.substring(0, 1).toUpperCase();
   const fullCode = biotopCode.toUpperCase();
 
-  // 알파벳 코드 체크
-  if (codePrefix === 'F' || fullCode.includes('FOREST')) return 'FOREST';
-  if (codePrefix === 'G' || fullCode.includes('GRASS')) return 'GRASSLAND';
-  if (codePrefix === 'W' || fullCode.includes('WET')) return 'WETLAND';
-  if (codePrefix === 'A' || fullCode.includes('AGRI')) return 'AGRICULTURAL';
-  if (codePrefix === 'R' || fullCode.includes('RESI')) return 'RESIDENTIAL';
-  if (codePrefix === 'C' || fullCode.includes('COMM')) return 'COMMERCIAL';
-  if (codePrefix === 'I' || fullCode.includes('INDU')) return 'INDUSTRIAL';
+  // 경기도 비오톱 대분류 코드 매핑
+  // A: 자연산림, B: 인공산림, C: 자연초지, D: 인공초지
+  // E: 하천습지, F: 호소습지, G: 농경지
+  // H: 조성녹지, I: 시가화건조지 (도시지역, 공업지 아님!)
+  switch (codePrefix) {
+    case 'A': // 자연산림
+    case 'B': // 인공산림
+      return 'FOREST';
+    case 'C': // 자연초지
+    case 'D': // 인공초지
+    case 'H': // 조성녹지
+      return 'GRASSLAND';
+    case 'E': // 하천습지
+    case 'F': // 호소습지
+      return 'WETLAND';
+    case 'G': // 농경지
+      return 'AGRICULTURAL';
+    case 'I': // 시가화건조지 → 주거지 (일반 도시지역)
+      return 'RESIDENTIAL';
+  }
 
   // 숫자 코드 기반 매핑 (비오톱 대분류 코드)
   if (/^[1-9]/.test(biotopCode)) {
