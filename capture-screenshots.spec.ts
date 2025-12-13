@@ -10,35 +10,35 @@ test('프레젠테이션 스크린샷 캡처', async ({ page }) => {
   await page.waitForTimeout(3000);
   await page.screenshot({ path: `${screenshotDir}/01-main.png` });
 
-  // 2. 주소 검색 - "광교호수공원" 검색
+  // 2. 주소 검색 - "광교산" 검색 (산림 지역)
   console.log('2. 주소 검색 캡처...');
   const searchInput = page.locator('input[placeholder*="주소"]').first();
-  await searchInput.fill('광교호수공원');
+  await searchInput.fill('광교산');
   await page.locator('button').filter({ has: page.locator('svg.lucide-search') }).first().click();
   await page.waitForTimeout(2000);
   await page.screenshot({ path: `${screenshotDir}/02-search.png` });
 
-  // 검색 결과 선택 - 광교호수공원 선택
-  const searchResult = page.locator('button').filter({ hasText: /광교|호수/ }).first();
+  // 검색 결과 선택 - 광교산 선택
+  const searchResult = page.locator('button').filter({ hasText: /광교/ }).first();
   if (await searchResult.isVisible({ timeout: 3000 }).catch(() => false)) {
     await searchResult.click();
     await page.waitForTimeout(2000);
   }
 
-  // 3. 영역 그리기 - 광교호수공원 북쪽 산림 지역 선택
+  // 3. 영역 그리기 - 광교산 산림 지역 선택
   console.log('3. 영역 그리기 캡처...');
   await page.locator('button:has-text("영역 그리기")').first().click();
   await page.waitForTimeout(500);
 
-  // 지도의 북쪽(위쪽) 산림 지역에 사각형 그리기
+  // 지도 중앙의 산림 지역에 사각형 그리기
   const mapCanvas = page.locator('.ol-viewport canvas, .ol-layer').first();
   const mapBox = await mapCanvas.boundingBox();
   if (mapBox) {
-    // 지도 중심에서 약간 위쪽(북쪽)의 산림 지역 선택
+    // 지도 중심 영역 (광교산 산림)
     const cx = mapBox.x + mapBox.width / 2;
-    const cy = mapBox.y + mapBox.height / 2 - 80; // 위쪽으로 이동 (산림 지역)
+    const cy = mapBox.y + mapBox.height / 2;
 
-    // 약 200m x 200m 정도의 사각형 영역 그리기
+    // 사각형 영역 그리기
     await page.mouse.click(cx - 50, cy - 50);
     await page.waitForTimeout(150);
     await page.mouse.click(cx + 50, cy - 50);
