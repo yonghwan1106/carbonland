@@ -130,7 +130,7 @@ export default function AddressSearch({ isMobile = false }: AddressSearchProps) 
         <div className="relative flex-1">
           <Input
             type="text"
-            placeholder="예: 수원시 영통구"
+            placeholder="예: 수원시 영통구 매탄동"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
