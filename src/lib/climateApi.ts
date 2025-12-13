@@ -152,23 +152,25 @@ export interface BiotopTypeData {
   carbonStorage: number;         // 탄소 저장량 (tC)
 }
 
-// EPSG:4326 (WGS84) bbox를 EPSG:5186 (Korea 2000)으로 변환하는 간이 함수
-// 실제 프로덕션에서는 proj4를 사용하는 것이 좋음
+// EPSG:4326 (WGS84) bbox를 EPSG:5186 (Korea 2000 / Central Belt)으로 변환
+// EPSG:5186 원점: 경도 127°E, 위도 38°N, False Easting 200000, False Northing 600000
 function transformBboxToEPSG5186(bbox: [number, number, number, number]): number[] {
-  // 간략화된 변환 (경기도 지역에 최적화)
-  // EPSG:4326 (lon, lat) -> EPSG:5186 (x, y)
   const [minLon, minLat, maxLon, maxLat] = bbox;
 
-  // 경기도 중심 기준 간이 변환 계수
-  const lonOrigin = 127.0;
-  const latOrigin = 37.5;
-  const meterPerDegLon = 88000; // 경기도 위도에서의 대략적인 값
-  const meterPerDegLat = 111000;
+  // EPSG:5186 Korea 2000 / Central Belt 파라미터
+  const lonOrigin = 127.0;      // 중심 경도
+  const latOrigin = 38.0;       // 원점 위도
+  const falseEasting = 200000;  // False Easting
+  const falseNorthing = 600000; // False Northing
 
-  const minX = 200000 + (minLon - lonOrigin) * meterPerDegLon;
-  const minY = 500000 + (minLat - latOrigin) * meterPerDegLat;
-  const maxX = 200000 + (maxLon - lonOrigin) * meterPerDegLon;
-  const maxY = 500000 + (maxLat - latOrigin) * meterPerDegLat;
+  // 경기도 지역 근사 변환 계수 (TM 투영)
+  const meterPerDegLon = 88804;  // cos(37.5°) * 111320
+  const meterPerDegLat = 111000; // 위도 1도당 거리
+
+  const minX = falseEasting + (minLon - lonOrigin) * meterPerDegLon;
+  const minY = falseNorthing + (minLat - latOrigin) * meterPerDegLat;
+  const maxX = falseEasting + (maxLon - lonOrigin) * meterPerDegLon;
+  const maxY = falseNorthing + (maxLat - latOrigin) * meterPerDegLat;
 
   return [minX, minY, maxX, maxY];
 }
@@ -324,7 +326,7 @@ export async function analyzeBiotopForArea(
       const biotopName = String(
         props.lclsf_nm || props.biotop_nm || props.name || '기타'
       );
-      const featureArea = Number(props.area || props.shp_area || 0) / 10000; // m² -> ha
+      const featureArea = Number(props.biotop_area || props.area || props.shp_area || 0) / 10000; // m² -> ha
 
       if (!biotopCode) continue;
 
@@ -416,8 +418,8 @@ export async function getCarbonDataForArea(
         const props = feature.properties as Record<string, unknown>;
 
         // 탄소 흡수량 속성 (레이어마다 속성명이 다를 수 있음)
-        const absorption = Number(props.cbn_abpvl || props.npp || props.absorption || 0);
-        const area = Number(props.area || props.shp_area || 0) / 10000; // m² -> ha
+        const absorption = Number(props.cbn_abpvl || props.sqmt1_npp || props.npp || props.absorption || 0);
+        const area = Number(props.biotop_area || props.area || props.shp_area || 0) / 10000; // m² -> ha
         const biotopCode = String(props.biotop_cd || props.code || 'UNKNOWN');
         const biotopName = String(props.biotop_nm || props.name || '기타');
 
@@ -446,9 +448,9 @@ export async function getCarbonDataForArea(
       for (const feature of treeFeatures.features) {
         const props = feature.properties as Record<string, unknown>;
 
-        const treeStorage = Number(props.plnt_cbn_strgat || props.tree_carbon || props.storage || 0);
+        const treeStorage = Number(props.cbn_strgat || props.sqmt1_cbn_strgat || props.plnt_cbn_strgat || props.tree_carbon || props.storage || 0);
         const soilStorage = Number(props.soil_cbn_strgat || props.soil_carbon || 0);
-        const area = Number(props.area || props.shp_area || 0) / 10000; // m² -> ha
+        const area = Number(props.biotop_area || props.area || props.shp_area || 0) / 10000; // m² -> ha
         const biotopCode = String(props.biotop_cd || props.code || 'UNKNOWN');
 
         totalTreeStorage += treeStorage * area;
