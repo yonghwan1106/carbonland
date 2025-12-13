@@ -268,12 +268,16 @@ export const useStore = create<AppState>((set, get) => ({
       },
       dataSource: 'mock',
       autoDetectedLandUse: false,
+      // 데모 영역은 이미 토지 유형이 정해져 있으므로 비오톱 분석 결과 초기화
+      biotopAnalysis: null,
+      isAutoDetecting: false,
     });
 
-    // API 데이터 비동기 조회 시도
-    const { fetchApiCarbonData, autoDetectBiotop } = get();
+    // API 데이터 비동기 조회 시도 (탄소 데이터만, 비오톱 자동 감지는 건너뜀)
+    // 데모 영역은 사전 정의된 토지 유형을 사용
+    const { fetchApiCarbonData } = get();
     fetchApiCarbonData(bbox, preset.areaHa);
-    autoDetectBiotop(bbox, preset.areaHa);
+    // autoDetectBiotop은 호출하지 않음 - 데모 영역은 preset.currentLandUse 사용
   },
 
   // 시뮬레이션 액션
