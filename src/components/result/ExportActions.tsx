@@ -38,16 +38,21 @@ export default function ExportActions({ resultPanelRef, isMobile = false }: Expo
 
     setIsExporting(true);
     try {
-      const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(resultPanelRef.current, {
+      const { toPng } = await import('html-to-image');
+
+      const dataUrl = await toPng(resultPanelRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false,
+        pixelRatio: 2,
+        skipFonts: true,
+        filter: (node) => {
+          // SVG 아이콘 등 일부 요소 제외 (필요시)
+          return true;
+        },
       });
 
       const link = document.createElement('a');
       link.download = `carbonland-simulation-${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
       link.click();
     } catch (error) {
       console.error('이미지 저장 오류:', error);
