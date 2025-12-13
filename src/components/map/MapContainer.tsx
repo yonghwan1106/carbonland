@@ -23,6 +23,8 @@ export default function MapContainer() {
 
   const [isMapReady, setIsMapReady] = useState(false);
   const [apiKeyStatus, setApiKeyStatus] = useState<boolean>(false);
+  const [isLayerLoading, setIsLayerLoading] = useState(false);
+  const loadingCountRef = useRef(0);
   const {
     isDrawing,
     setSelectedArea,
@@ -71,6 +73,26 @@ export default function MapContainer() {
           Object.values(WMS_LAYERS).forEach((layerConfig) => {
             const sourceConfig = createWMSSourceConfig(layerConfig.layerName);
             const wmsSource = new TileWMS(sourceConfig);
+
+            // 로딩 상태 추적
+            wmsSource.on('tileloadstart', () => {
+              loadingCountRef.current++;
+              setIsLayerLoading(true);
+            });
+            wmsSource.on('tileloadend', () => {
+              loadingCountRef.current--;
+              if (loadingCountRef.current <= 0) {
+                loadingCountRef.current = 0;
+                setIsLayerLoading(false);
+              }
+            });
+            wmsSource.on('tileloaderror', () => {
+              loadingCountRef.current--;
+              if (loadingCountRef.current <= 0) {
+                loadingCountRef.current = 0;
+                setIsLayerLoading(false);
+              }
+            });
 
             const wmsLayer = new TileLayer({
               source: wmsSource,
@@ -333,6 +355,14 @@ export default function MapContainer() {
             <div className="w-8 h-8 border-2 border-slate-300 border-t-green-500 rounded-full animate-spin" />
             <span>지도 로딩 중...</span>
           </div>
+        </div>
+      )}
+
+      {/* WMS 레이어 로딩 인디케이터 */}
+      {isMapReady && isLayerLoading && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-full shadow-lg px-4 py-2 flex items-center gap-2 z-20">
+          <div className="w-4 h-4 border-2 border-green-200 border-t-green-600 rounded-full animate-spin" />
+          <span className="text-sm text-slate-600">레이어 로딩 중...</span>
         </div>
       )}
 

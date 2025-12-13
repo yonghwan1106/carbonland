@@ -6,7 +6,7 @@ import Link from 'next/link';
 import ControlPanel from '@/components/panel/ControlPanel';
 import ResultPanel from '@/components/result/ResultPanel';
 import LayerPanel from '@/components/map/LayerPanel';
-import { Leaf, Github, Info, Map, Settings, BarChart3, X } from 'lucide-react';
+import { Leaf, Github, Info, Map, Settings, BarChart3, X, Layers } from 'lucide-react';
 
 // OpenLayers SSR 방지를 위한 동적 import
 const MapContainer = dynamic(
@@ -24,7 +24,7 @@ const MapContainer = dynamic(
   }
 );
 
-type MobileTab = 'map' | 'control' | 'result';
+type MobileTab = 'map' | 'layers' | 'control' | 'result';
 
 export default function Home() {
   const [mobileTab, setMobileTab] = useState<MobileTab>('map');
@@ -131,7 +131,7 @@ export default function Home() {
               {/* 패널 헤더 */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
                 <h3 className="font-semibold text-slate-800">
-                  {mobileTab === 'control' ? '컨트롤 패널' : '분석 결과'}
+                  {mobileTab === 'layers' ? '레이어 관리' : mobileTab === 'control' ? '컨트롤 패널' : '분석 결과'}
                 </h3>
                 <button
                   onClick={() => setShowMobilePanel(false)}
@@ -143,7 +143,11 @@ export default function Home() {
 
               {/* 패널 컨텐츠 */}
               <div className="flex-1 overflow-hidden">
-                {mobileTab === 'control' ? (
+                {mobileTab === 'layers' ? (
+                  <div className="h-full overflow-y-auto p-4">
+                    <LayerPanel isMobile />
+                  </div>
+                ) : mobileTab === 'control' ? (
                   <ControlPanel isMobile />
                 ) : (
                   <ResultPanel isMobile />
@@ -161,7 +165,7 @@ export default function Home() {
             setMobileTab('map');
             setShowMobilePanel(false);
           }}
-          className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors ${
             mobileTab === 'map' && !showMobilePanel
               ? 'text-green-600 bg-green-50'
               : 'text-slate-500'
@@ -172,10 +176,24 @@ export default function Home() {
         </button>
         <button
           onClick={() => {
+            setMobileTab('layers');
+            setShowMobilePanel(true);
+          }}
+          className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors ${
+            mobileTab === 'layers' && showMobilePanel
+              ? 'text-green-600 bg-green-50'
+              : 'text-slate-500'
+          }`}
+        >
+          <Layers className="w-5 h-5" />
+          <span className="text-[10px] font-medium">레이어</span>
+        </button>
+        <button
+          onClick={() => {
             setMobileTab('control');
             setShowMobilePanel(true);
           }}
-          className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors ${
             mobileTab === 'control' && showMobilePanel
               ? 'text-green-600 bg-green-50'
               : 'text-slate-500'
@@ -189,7 +207,7 @@ export default function Home() {
             setMobileTab('result');
             setShowMobilePanel(true);
           }}
-          className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors ${
             mobileTab === 'result' && showMobilePanel
               ? 'text-green-600 bg-green-50'
               : 'text-slate-500'
@@ -202,7 +220,7 @@ export default function Home() {
 
       {/* 푸터 - Desktop only */}
       <footer className="hidden md:flex h-8 bg-slate-800 items-center justify-center text-xs text-slate-400 shrink-0">
-        <span>데이터 출처: 경기기후플랫폼 | Mock 데이터 사용 중</span>
+        <span>데이터 출처: 경기기후플랫폼 | 경기 기후 바이브코딩 해커톤 2025</span>
       </footer>
     </div>
   );

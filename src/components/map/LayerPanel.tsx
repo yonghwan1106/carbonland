@@ -33,12 +33,16 @@ const LAYER_INFO: Record<string, { description: string; source: string }> = {
   },
 };
 
-export default function LayerPanel() {
+interface LayerPanelProps {
+  isMobile?: boolean;
+}
+
+export default function LayerPanel({ isMobile = false }: LayerPanelProps) {
   const { layers, toggleLayer, setLayerOpacity } = useStore();
   const apiKeyAvailable = isApiKeyValid();
 
   return (
-    <Card className="absolute top-4 right-4 w-64 bg-white/95 backdrop-blur-sm shadow-lg z-10">
+    <Card className={isMobile ? "w-full bg-white shadow-none border-0" : "absolute top-4 right-4 w-64 bg-white/95 backdrop-blur-sm shadow-lg z-10"}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <Layers className="w-4 h-4" />

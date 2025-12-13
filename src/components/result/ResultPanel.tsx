@@ -400,7 +400,7 @@ export default function ResultPanel({ isMobile = false }: ResultPanelProps) {
       {/* 푸터 */}
       <div className="p-3 border-t border-slate-200 bg-white">
         <p className="text-xs text-slate-400 text-center">
-          데이터 출처: 경기기후플랫폼 (Mock 데이터)
+          데이터 출처: 경기기후플랫폼
         </p>
       </div>
     </div>
