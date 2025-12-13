@@ -32,11 +32,13 @@ export default function AddressSearch({ isMobile = false }: AddressSearchProps) 
 
     try {
       // OpenStreetMap Nominatim API 사용 (무료, API 키 불필요)
+      // 경기도 지역 검색 강화를 위해 viewbox 사용 (경기도 범위)
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' 경기도')}&limit=5&countrycodes=kr`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=kr&viewbox=126.3,38.3,127.9,36.9&bounded=0`,
         {
           headers: {
             'Accept-Language': 'ko',
+            'User-Agent': 'CarbonLand/1.0',
           },
         }
       );

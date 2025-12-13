@@ -68,39 +68,6 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
             </CardContent>
           </Card>
 
-          {/* 데모 영역 선택 (프리셋) */}
-          <Card className="border-green-200 bg-green-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2 text-green-700">
-                <Navigation className="w-4 h-4" />
-                데모 영역 선택
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-xs text-green-600 mb-2">
-                클릭하면 해당 지역으로 이동합니다
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {presetAreas.map((preset) => (
-                  <Button
-                    key={preset.id}
-                    variant={selectedArea?.id === preset.id ? 'default' : 'outline'}
-                    size="sm"
-                    className="justify-start h-auto py-2 px-2 text-left"
-                    onClick={() => selectPresetArea(preset.id)}
-                  >
-                    <div className="text-left min-w-0">
-                      <div className="font-medium text-xs truncate">{preset.name}</div>
-                      <div className="text-[10px] opacity-70 truncate">
-                        {preset.areaHa} ha
-                      </div>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* 영역 선택 */}
           <Card>
             <CardHeader className="pb-2">
@@ -262,6 +229,39 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* 데모 영역 선택 (프리셋) - 하단으로 이동 */}
+          <Card className="border-slate-200 bg-slate-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-slate-600">
+                <Navigation className="w-4 h-4" />
+                데모 영역
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-xs text-slate-500 mb-2">
+                샘플 영역을 선택하여 테스트할 수 있습니다
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {presetAreas.map((preset) => (
+                  <Button
+                    key={preset.id}
+                    variant={selectedArea?.id === preset.id ? 'default' : 'outline'}
+                    size="sm"
+                    className="justify-start h-auto py-2 px-2 text-left"
+                    onClick={() => selectPresetArea(preset.id)}
+                  >
+                    <div className="text-left min-w-0">
+                      <div className="font-medium text-xs truncate">{preset.name}</div>
+                      <div className="text-[10px] opacity-70 truncate">
+                        {preset.areaHa} ha
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -286,39 +286,6 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
           </CardHeader>
           <CardContent>
             <AddressSearch />
-          </CardContent>
-        </Card>
-
-        {/* 데모 영역 선택 (프리셋) */}
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2 text-green-700">
-              <Navigation className="w-4 h-4" />
-              데모 영역 선택
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-xs text-green-600 mb-2">
-              클릭하면 해당 지역으로 이동합니다
-            </p>
-            <div className="grid grid-cols-1 gap-2">
-              {presetAreas.map((preset) => (
-                <Button
-                  key={preset.id}
-                  variant={selectedArea?.id === preset.id ? 'default' : 'outline'}
-                  size="sm"
-                  className="justify-start h-auto py-2 px-3"
-                  onClick={() => selectPresetArea(preset.id)}
-                >
-                  <div className="text-left">
-                    <div className="font-medium text-sm">{preset.name}</div>
-                    <div className="text-xs opacity-70">
-                      {preset.areaHa} ha · {CARBON_COEFFICIENTS[preset.currentLandUse].name}
-                    </div>
-                  </div>
-                </Button>
-              ))}
-            </div>
           </CardContent>
         </Card>
 
@@ -503,6 +470,39 @@ export default function ControlPanel({ isMobile = false }: ControlPanelProps) {
               <Button onClick={resetSimulation} variant="outline" size="icon">
                 <RotateCcw className="w-4 h-4" />
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 데모 영역 선택 (프리셋) - 하단으로 이동 */}
+        <Card className="border-slate-200 bg-slate-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-slate-600">
+              <Navigation className="w-4 h-4" />
+              데모 영역
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-xs text-slate-500 mb-2">
+              샘플 영역을 선택하여 테스트할 수 있습니다
+            </p>
+            <div className="grid grid-cols-1 gap-2">
+              {presetAreas.map((preset) => (
+                <Button
+                  key={preset.id}
+                  variant={selectedArea?.id === preset.id ? 'default' : 'outline'}
+                  size="sm"
+                  className="justify-start h-auto py-2 px-3"
+                  onClick={() => selectPresetArea(preset.id)}
+                >
+                  <div className="text-left">
+                    <div className="font-medium text-sm">{preset.name}</div>
+                    <div className="text-xs opacity-70">
+                      {preset.areaHa} ha · {CARBON_COEFFICIENTS[preset.currentLandUse].name}
+                    </div>
+                  </div>
+                </Button>
+              ))}
             </div>
           </CardContent>
         </Card>
