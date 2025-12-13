@@ -17,6 +17,21 @@ import {
   Droplets,
   Github,
   ExternalLink,
+  MapPin,
+  Layers,
+  BarChart3,
+  Download,
+  Share2,
+  Sparkles,
+  Database,
+  Zap,
+  CheckCircle2,
+  Play,
+  Search,
+  MousePointer2,
+  Settings,
+  FileText,
+  Wheat,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,22 +80,146 @@ export default function AboutPage() {
 
         {/* 히어로 섹션 */}
         <section className="text-center mb-8 md:mb-12">
-          <Badge className="mb-3 md:mb-4 bg-green-100 text-green-700 hover:bg-green-100 text-xs">
-            경기 기후 바이브코딩 해커톤 2025
-          </Badge>
-          <h1 className="text-2xl md:text-4xl font-bold text-slate-800 mb-2 md:mb-4">
-            CarbonLand
+          <div className="flex justify-center gap-2 mb-3 md:mb-4 flex-wrap">
+            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs">
+              경기 기후 바이브코딩 해커톤 2025
+            </Badge>
+            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs">
+              경기기후플랫폼 API 연동
+            </Badge>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold text-slate-800 mb-2 md:mb-4">
+            Carbon<span className="text-green-600">Land</span>
           </h1>
           <p className="text-base md:text-xl text-slate-600 mb-2">탄소중립 토지이용 시뮬레이터</p>
-          <p className="text-lg md:text-2xl font-semibold text-green-600 mt-4 md:mt-6">
+          <p className="text-xl md:text-3xl font-semibold text-green-600 mt-4 md:mt-6">
             &quot;이 땅을 개발하면, 탄소는 얼마나 변할까?&quot;
           </p>
           <p className="text-sm md:text-base text-slate-500 mt-3 md:mt-4 max-w-2xl mx-auto px-2">
-            개발/보전 계획에 따른 탄소 흡수/저장/배출 변화를 시뮬레이션하는 의사결정 지원 도구
+            경기기후플랫폼의 실제 데이터를 활용하여 토지이용 변경에 따른
+            탄소 흡수/저장/배출 변화를 실시간으로 시뮬레이션하는 의사결정 지원 도구
           </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Link href="/">
+              <Button className="gap-2">
+                <Play className="w-4 h-4" />
+                시뮬레이터 시작
+              </Button>
+            </Link>
+            <a href="https://github.com/yonghwan1106/carbonland" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="gap-2">
+                <Github className="w-4 h-4" />
+                GitHub
+              </Button>
+            </a>
+          </div>
+        </section>
+
+        {/* 핵심 특징 배너 */}
+        <section className="mb-8 md:mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="bg-gradient-to-br from-green-500 to-emerald-600 border-0 text-white">
+              <CardContent className="pt-4 pb-4 text-center">
+                <Database className="w-8 h-8 mx-auto mb-2 opacity-90" />
+                <p className="text-xs font-medium opacity-90">실제 API 연동</p>
+                <p className="text-lg font-bold">WMS/WFS</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-blue-500 to-indigo-600 border-0 text-white">
+              <CardContent className="pt-4 pb-4 text-center">
+                <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-90" />
+                <p className="text-xs font-medium opacity-90">AI 자동감지</p>
+                <p className="text-lg font-bold">비오톱 분석</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-purple-500 to-pink-600 border-0 text-white">
+              <CardContent className="pt-4 pb-4 text-center">
+                <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-90" />
+                <p className="text-xs font-medium opacity-90">다중 비교</p>
+                <p className="text-lg font-bold">7개 시나리오</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-orange-500 to-red-600 border-0 text-white">
+              <CardContent className="pt-4 pb-4 text-center">
+                <Share2 className="w-8 h-8 mx-auto mb-2 opacity-90" />
+                <p className="text-xs font-medium opacity-90">결과 공유</p>
+                <p className="text-lg font-bold">PDF/이미지</p>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         <Separator className="my-6 md:my-8" />
+
+        {/* 사용 방법 */}
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Play className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">사용 방법</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500" />
+              <CardContent className="pt-6">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-3">
+                  <span className="text-green-600 font-bold">1</span>
+                </div>
+                <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                  <Search className="w-4 h-4 text-green-600" />
+                  위치 검색
+                </h3>
+                <p className="text-sm text-slate-500">
+                  주소를 검색하거나 지도에서 관심 지역으로 이동
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+              <CardContent className="pt-6">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                  <span className="text-blue-600 font-bold">2</span>
+                </div>
+                <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                  <MousePointer2 className="w-4 h-4 text-blue-600" />
+                  영역 선택
+                </h3>
+                <p className="text-sm text-slate-500">
+                  지도에서 분석할 영역을 직접 그리거나 데모 영역 선택
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
+              <CardContent className="pt-6">
+                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-3">
+                  <span className="text-purple-600 font-bold">3</span>
+                </div>
+                <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                  <Settings className="w-4 h-4 text-purple-600" />
+                  시나리오 설정
+                </h3>
+                <p className="text-sm text-slate-500">
+                  토지이용 변경 시나리오와 분석 기간 설정
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-red-500" />
+              <CardContent className="pt-6">
+                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mb-3">
+                  <span className="text-orange-600 font-bold">4</span>
+                </div>
+                <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-orange-600" />
+                  결과 확인
+                </h3>
+                <p className="text-sm text-slate-500">
+                  탄소 변화량 확인 후 PDF/이미지로 저장
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
         {/* 해결하려는 문제 */}
         <section className="mb-8 md:mb-12">
@@ -95,7 +234,10 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-600 mb-2">토지이용 변경 시 탄소 영향을 알 수 없음</p>
-                <p className="text-sm text-green-600 font-medium">→ 실시간 시뮬레이션 제공</p>
+                <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                  <CheckCircle2 className="w-4 h-4" />
+                  실시간 시뮬레이션 제공
+                </div>
               </CardContent>
             </Card>
             <Card className="border-orange-200 bg-orange-50/50">
@@ -104,7 +246,10 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-600 mb-2">환경영향평가에 비용/시간 소요</p>
-                <p className="text-sm text-green-600 font-medium">→ 웹 기반 즉시 분석</p>
+                <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                  <CheckCircle2 className="w-4 h-4" />
+                  웹 기반 즉시 분석
+                </div>
               </CardContent>
             </Card>
             <Card className="border-orange-200 bg-orange-50/50">
@@ -113,7 +258,122 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-600 mb-2">개발사업의 환경 영향 불투명</p>
-                <p className="text-sm text-green-600 font-medium">→ 직관적 시각화</p>
+                <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                  <CheckCircle2 className="w-4 h-4" />
+                  직관적 시각화
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* 주요 기능 */}
+        <section className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Lightbulb className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">주요 기능</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800">지도 기반 영역 선택</h3>
+                    <p className="text-sm text-slate-500 mt-1">주소 검색, 직접 그리기, 데모 영역 선택 지원</p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-xs">OpenLayers</Badge>
+                      <Badge variant="outline" className="text-xs">Nominatim</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                    <Layers className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800">WMS 레이어 시각화</h3>
+                    <p className="text-sm text-slate-500 mt-1">탄소흡수지도, 수목/토양탄소, 비오톱 레이어</p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-xs">경기기후플랫폼</Badge>
+                      <Badge variant="outline" className="text-xs">WMS</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800">비오톱 자동 감지</h3>
+                    <p className="text-sm text-slate-500 mt-1">WFS 데이터로 선택 영역의 토지유형 자동 분석</p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-xs">WFS</Badge>
+                      <Badge variant="outline" className="text-xs">자동감지</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                    <BarChart3 className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800">다중 시나리오 비교</h3>
+                    <p className="text-sm text-slate-500 mt-1">7개 토지이용 시나리오 동시 비교 분석</p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-xs">Recharts</Badge>
+                      <Badge variant="outline" className="text-xs">비교 테이블</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                    <Download className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800">결과 저장/공유</h3>
+                    <p className="text-sm text-slate-500 mt-1">PNG 이미지, PDF 리포트, URL 공유 지원</p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-xs">html2canvas</Badge>
+                      <Badge variant="outline" className="text-xs">jsPDF</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center shrink-0">
+                    <Zap className="w-5 h-5 text-sky-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800">실시간 탄소 계산</h3>
+                    <p className="text-sm text-slate-500 mt-1">즉각적인 흡수/저장/배출량 계산 및 환산</p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline" className="text-xs">Turf.js</Badge>
+                      <Badge variant="outline" className="text-xs">IPCC 계수</Badge>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -165,68 +425,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* 주요 기능 */}
-        <section className="mb-8 md:mb-12">
-          <div className="flex items-center gap-2 mb-4 md:mb-6">
-            <Lightbulb className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
-            <h2 className="text-xl md:text-2xl font-bold text-slate-800">주요 기능</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                    <span className="text-green-600 font-bold text-sm">1</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-800">지도 기반 영역 선택</h3>
-                    <p className="text-sm text-slate-500 mt-1">지도에서 분석할 토지 영역을 자유롭게 선택</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                    <span className="text-green-600 font-bold text-sm">2</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-800">현재 탄소 현황 조회</h3>
-                    <p className="text-sm text-slate-500 mt-1">선택 영역의 탄소 저장량, 흡수량 자동 계산</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                    <span className="text-green-600 font-bold text-sm">3</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-800">토지이용 변경 시뮬레이션</h3>
-                    <p className="text-sm text-slate-500 mt-1">개발/보전 시나리오별 탄소 변화 예측</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                    <span className="text-green-600 font-bold text-sm">4</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-800">결과 시각화</h3>
-                    <p className="text-sm text-slate-500 mt-1">차트와 환산 지표로 쉽게 이해</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
         {/* 탄소 계수 */}
         <section className="mb-8 md:mb-12">
           <div className="flex items-center gap-2 mb-4 md:mb-6">
@@ -272,6 +470,15 @@ export default function AboutPage() {
                       <td className="text-right py-2 px-3 text-green-600 font-medium">50</td>
                       <td className="text-right py-2 px-3 text-green-600">3</td>
                       <td className="text-right py-2 px-3 text-slate-400">0</td>
+                    </tr>
+                    <tr className="border-b hover:bg-slate-50">
+                      <td className="py-2 px-3 flex items-center gap-2">
+                        <Wheat className="w-4 h-4 text-lime-600" />
+                        농경지
+                      </td>
+                      <td className="text-right py-2 px-3 text-green-600 font-medium">40</td>
+                      <td className="text-right py-2 px-3 text-green-600">2</td>
+                      <td className="text-right py-2 px-3 text-slate-400">0.5</td>
                     </tr>
                     <tr className="border-b hover:bg-slate-50">
                       <td className="py-2 px-3 flex items-center gap-2">
@@ -372,8 +579,9 @@ export default function AboutPage() {
                   <h3 className="font-semibold text-slate-700 mb-3">상태관리/차트</h3>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">Zustand</Badge>
-                    <Badge variant="outline">TanStack Query</Badge>
                     <Badge variant="outline">Recharts</Badge>
+                    <Badge variant="outline">html2canvas</Badge>
+                    <Badge variant="outline">jsPDF</Badge>
                   </div>
                 </div>
                 <div>
@@ -381,6 +589,7 @@ export default function AboutPage() {
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">경기기후플랫폼 API</Badge>
                     <Badge variant="outline">WMS/WFS</Badge>
+                    <Badge variant="outline">Nominatim</Badge>
                   </div>
                 </div>
               </div>
@@ -388,39 +597,48 @@ export default function AboutPage() {
           </Card>
         </section>
 
-        {/* 참고 자료 */}
+        {/* 데이터 출처 */}
         <section className="mb-8 md:mb-12">
           <div className="flex items-center gap-2 mb-4 md:mb-6">
-            <ExternalLink className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
-            <h2 className="text-xl md:text-2xl font-bold text-slate-800">참고 자료</h2>
+            <Database className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-800">데이터 출처</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <Card>
               <CardContent className="pt-6">
-                <h3 className="font-semibold text-slate-700 mb-3">경기기후플랫폼</h3>
+                <h3 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                  <Database className="w-4 h-4 text-green-600" />
+                  경기기후플랫폼 API
+                </h3>
                 <ul className="space-y-2 text-sm">
-                  <li>
-                    <a href="https://climate.gg.go.kr/ips" target="_blank" rel="noopener noreferrer"
-                       className="text-blue-600 hover:underline flex items-center gap-1">
-                      메인 사이트 <ExternalLink className="w-3 h-3" />
-                    </a>
+                  <li className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">WMS</Badge>
+                    탄소흡수지도, 수목탄소, 토양탄소, 비오톱
                   </li>
-                  <li>
-                    <a href="https://climate.gg.go.kr/ols" target="_blank" rel="noopener noreferrer"
-                       className="text-blue-600 hover:underline flex items-center gap-1">
-                      Open & Share <ExternalLink className="w-3 h-3" />
-                    </a>
+                  <li className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">WFS</Badge>
+                    비오톱 대분류, 탄소흡수량, 수목탄소저장량
                   </li>
                 </ul>
+                <div className="mt-3 pt-3 border-t">
+                  <a href="https://climate.gg.go.kr/ols" target="_blank" rel="noopener noreferrer"
+                     className="text-blue-600 hover:underline flex items-center gap-1 text-sm">
+                    경기기후플랫폼 Open & Share <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
-                <h3 className="font-semibold text-slate-700 mb-3">탄소 계산 기준</h3>
+                <h3 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  탄소 계산 기준
+                </h3>
                 <ul className="space-y-2 text-sm text-slate-600">
-                  <li>IPCC LULUCF 가이드라인</li>
-                  <li>산림청 탄소흡수원 통계</li>
-                  <li>국가 온실가스 인벤토리</li>
+                  <li>• IPCC LULUCF 가이드라인</li>
+                  <li>• 산림청 탄소흡수원 통계</li>
+                  <li>• 국가 온실가스 인벤토리</li>
+                  <li>• 탄소-CO2 환산계수: 3.67</li>
                 </ul>
               </CardContent>
             </Card>
@@ -435,11 +653,14 @@ export default function AboutPage() {
               <p className="text-sm md:text-base text-green-100 mb-4 md:mb-6">
                 경기도 어느 땅이든, 개발과 보전의 탄소 영향을 확인할 수 있습니다.
               </p>
-              <Link href="/">
-                <Button size="default" variant="secondary" className="font-semibold text-sm md:text-base">
-                  시뮬레이터 시작하기
-                </Button>
-              </Link>
+              <div className="flex justify-center gap-3">
+                <Link href="/">
+                  <Button size="default" variant="secondary" className="font-semibold text-sm md:text-base gap-2">
+                    <Play className="w-4 h-4" />
+                    시뮬레이터 시작하기
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </section>
@@ -454,7 +675,7 @@ export default function AboutPage() {
           <p className="text-[10px] md:text-xs">
             데이터 출처: 경기기후플랫폼 | 탄소 계수: IPCC 가이드라인 기반
           </p>
-          <div className="mt-3 md:mt-4">
+          <div className="mt-3 md:mt-4 flex justify-center gap-4">
             <a
               href="https://github.com/yonghwan1106/carbonland"
               target="_blank"
@@ -463,6 +684,15 @@ export default function AboutPage() {
             >
               <Github className="w-4 h-4" />
               <span className="text-xs md:text-sm">GitHub</span>
+            </a>
+            <a
+              href="https://climate.gg.go.kr/ols"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+            >
+              <Database className="w-4 h-4" />
+              <span className="text-xs md:text-sm">경기기후플랫폼</span>
             </a>
           </div>
         </div>
