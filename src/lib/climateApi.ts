@@ -374,13 +374,22 @@ export async function analyzeBiotopForArea(
       }
     }
 
-    // 면적 기준 정렬
+    // 전체 피처 면적 합계 계산
+    const totalFeatureArea = Array.from(typeAreas.values()).reduce(
+      (sum, data) => sum + data.area,
+      0
+    );
+
+    // 면적 기준 정렬 (상대적 비율 사용)
+    // API가 bbox에 걸치는 전체 피처를 반환하므로,
+    // 선택 영역 대비 비율 대신 피처 간 상대적 비율 사용
     const sortedTypes = Array.from(typeAreas.entries())
       .map(([type, data]) => ({
         type,
         typeName: data.name,
         area: data.area,
-        ratio: areaHa > 0 ? (data.area / areaHa) * 100 : 0,
+        // 피처 전체 면적 대비 상대적 비율 (100%를 초과하지 않음)
+        ratio: totalFeatureArea > 0 ? (data.area / totalFeatureArea) * 100 : 0,
       }))
       .sort((a, b) => b.area - a.area);
 
@@ -390,7 +399,7 @@ export async function analyzeBiotopForArea(
 
     const dominant = sortedTypes[0];
 
-    console.log(`비오톱 자동 감지: ${dominant.typeName} (${dominant.ratio.toFixed(1)}%)`);
+    console.log(`비오톱 자동 감지: ${dominant.typeName} (${dominant.ratio.toFixed(1)}%, 피처 ${biotopFeatures.features.length}개)`);
 
     return {
       dominantType: dominant.type,

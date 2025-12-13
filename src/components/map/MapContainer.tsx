@@ -333,6 +333,27 @@ export default function MapContainer() {
     updateView();
   }, [viewport, isMapReady]);
 
+  // Custom event를 통한 좌표 이동 (테스트용)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isMapReady) return;
+
+    const handleMoveToCoordinate = async (event: CustomEvent<{ center: [number, number]; zoom: number }>) => {
+      const { fromLonLat } = await import('ol/proj');
+      const view = mapInstanceRef.current!.getView();
+      view.animate({
+        center: fromLonLat(event.detail.center),
+        zoom: event.detail.zoom,
+        duration: 500,
+      });
+    };
+
+    window.addEventListener('moveToCoordinate', handleMoveToCoordinate as EventListener);
+
+    return () => {
+      window.removeEventListener('moveToCoordinate', handleMoveToCoordinate as EventListener);
+    };
+  }, [isMapReady]);
+
   // 선택 영역 변경 시 프리셋 레이어 업데이트
   useEffect(() => {
     if (!presetLayerRef.current) return;
