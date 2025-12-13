@@ -135,7 +135,7 @@ export default function AddressSearch({ isMobile = false }: AddressSearchProps) 
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => results.length > 0 && setShowResults(true)}
-            className={isMobile ? "text-sm" : ""}
+            className={isMobile ? "text-sm placeholder:text-xs" : "placeholder:text-sm"}
           />
         </div>
         <Button
